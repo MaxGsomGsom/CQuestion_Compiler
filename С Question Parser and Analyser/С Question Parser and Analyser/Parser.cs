@@ -41,53 +41,39 @@ namespace С_Question_Parser_and_Analyser
 
         public void Parse()
         {
-            pos = 0;
+            pos = -1;
             prog = new List<Lex>();
             identifers = new List<string>();
             stringConst = new List<string>();
             numericConst = new List<double>();
-
-
-        newLex:
             curLex = "";
 
-            switch (GetNextSymb())
-            {
-                //незначащие разделители
-                case ' ':
-                case '\n':
-                case '\r': goto newLex;
-                //значащие разделители
-                case '.':
-                case '{':
-                case '}':
-                case '(':
-                case ')':
-                case ',':
-                case '*':
-                case '/':
-                case ';': AddLex(1); goto newLex;
 
+            while (pos<inputText.Length-1)
+            {
+                pos++;
+
+                if (IsEmptyChar(false)) continue;
+
+                curLex += inputText[pos];
+
+
+                if (IsSeparatorChar(false) && !IsSeparatorChar(true))
+                {
+                    AddLex(1);
+                    continue;
+                }
+                if (!IsSeparatorChar(false) && !IsEmptyChar(false) && (IsSeparatorChar(true) || IsEmptyChar(true)))
+                {
+                    if (IsItReservedWord()) AddLex(0);
+                    else AddLex(2);
+                    continue;
+                }
 
             }
 
 
 
-
-        }
-
-        char GetNextSymb()
-        {
-            curLex += inputText[pos];
-
-            if (IsSeparator(inputText[pos]) && !IsSeparator(inputText[pos + 1])) 
-            {
-                AddLex(1);
-                goto newLex;
-            }
-
-            pos++;
-            return inputText[pos];
         }
 
         void AddLex(int type)
@@ -96,9 +82,20 @@ namespace С_Question_Parser_and_Analyser
 
             switch (type)
             {
+                case 0:
+                    {
+                        lexID = reservedWords.IndexOf(curLex);
+                        break;
+                    }
                 case 1:
                     {
                         lexID = separators.IndexOf(curLex);
+                        break;
+                    }
+                case 2:
+                    {
+                        if (identifers.IndexOf(curLex) == -1) identifers.Add(curLex);
+                        lexID = identifers.IndexOf(curLex);
                         break;
                     }
             }
@@ -107,15 +104,69 @@ namespace С_Question_Parser_and_Analyser
             buf.type = type;
             buf.number = lexID;
             prog.Add(buf);
+            curLex = "";
         }
 
-        bool IsSeparator(char c)
+        bool IsSeparatorChar(bool next)
         {
-            if (c == ' ' || c == '\n' || c == '\r' || c == ';' || c == '.' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '|' || c == '&' || c == '=' || c == '!' || c == '<' || c == '>' || c == '*' || c == '/' || c == '+' || c == '-')
+            char c;
+            if (next) c = inputText[pos + 1];
+            else c = inputText[pos];
+            if (c == ';' || c == '.' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '|' || c == '&' || c == '=' || c == '!' || c == '<' || c == '>' || c == '*' || c == '/' || c == '+' || c == '-') return true;
+            return false;
+        }
+
+        bool IsItReservedWord()
+        {
+            if (curLex == "using" || curLex == "namespace" || curLex == "class" || curLex == "void" || curLex == "string" || curLex == "bool" || curLex == "int" || curLex == "break" || curLex == "continue" || curLex == "return" || curLex == "for" || curLex == "if" || curLex == "else" || curLex == "true" || curLex == "false") return true;
+            return false;
+        }
+
+        bool IsEmptyChar(bool next)
+        {
+            char c;
+            if (next) c = inputText[pos + 1];
+            else c = inputText[pos];
+            if (c == ' ' || c == '\n' || c == '\r') return true;
+            return false;
+        }
+
+        public List<string[]> GetLexes()
+        {
+            List<string[]> output = new List<string[]>();
+
+            for (int i = 0; i < prog.Count; i++)
             {
-                return true;
+                string num = (i+1).ToString();
+                string type = "";
+                string lex = "";
+                if (prog[i].number!=-1)
+                switch (prog[i].type)
+                {
+                    case 0:
+                        {
+                            type = "Зарезервированное слово";
+                            lex = reservedWords[prog[i].number];
+                            break;
+                        }
+                    case 1:
+                        {
+                            type = "Значащий разделитель";
+                            lex = separators[prog[i].number];
+                            break;
+                        }
+                    case 2:
+                        {
+                            type = "Идентификатор";
+                            lex = identifers[prog[i].number];
+                            break;
+                        }
+                }
+
+                string[] outLex = { num, type, lex };
+                output.Add(outLex);
             }
-            else return false;
+            return output;
         }
 
     }
