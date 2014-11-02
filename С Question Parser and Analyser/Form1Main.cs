@@ -22,7 +22,9 @@ namespace С_Question_Parser_and_Analyser
         private void button1LoadFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog openDialog = new OpenFileDialog();
+
             openDialog.ShowDialog();
+            if (openDialog.FileName == "") return;
 
             string inputText = File.ReadAllText(openDialog.FileName, Encoding.GetEncoding(1251));
 
