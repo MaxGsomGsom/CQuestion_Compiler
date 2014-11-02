@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics.Contracts;
+using System.Windows.Forms;
 
 namespace С_Question_Parser_and_Analyser
 {
@@ -48,13 +49,14 @@ namespace С_Question_Parser_and_Analyser
             stringConst = new List<string>();
             numericConst = new List<double>();
 
+            string errorText = "Неизвестная ошибка";
 
-
-            while (pos<(inputText.Length-1))
+            while (pos < (inputText.Length - 1))
             {
                 curLex = "";
                 pos++;
 
+                //разделители
                 if (IsSymbEmpty(pos)) continue;
                 else if (inputText[pos] == '(' || inputText[pos] == ')' || inputText[pos] == ';' || inputText[pos] == '{'
                     || inputText[pos] == '}' || inputText[pos] == ',' || inputText[pos] == '.' || inputText[pos] == '*')
@@ -70,15 +72,28 @@ namespace С_Question_Parser_and_Analyser
                     AddLex(1);
                     continue;
                 }
-                else if (inputText[pos] == '|' || inputText[pos] == '&' || inputText[pos] == '-' || inputText[pos] == '+')
+                else if (inputText[pos] == '-' || inputText[pos] == '+')
                 {
                     curLex += inputText[pos];
                     if (inputText[pos + 1] == inputText[pos]) AddNextSymb();
-                    AddLex(1);
+                    if (!IsSymbDigit(pos + 1)) AddLex(1);
                     continue;
                 }
+                else if (inputText[pos] == '|' || inputText[pos] == '&')
+                {
+                    curLex += inputText[pos];
+                    if (inputText[pos + 1] == inputText[pos])
+                    {
+                        AddNextSymb();
+                        AddLex(1);
+                        continue;
+                    }
+                    else { errorText = "Неверная логическая операция"; break; }; //error
+                }
+                //числовые константы
                 else if (IsSymbDigit(pos))
                 {
+                    if (inputText[pos - 1] == '-') curLex += inputText[pos - 1];
                     curLex += inputText[pos];
                     while (IsSymbDigit(pos + 1)) AddNextSymb();
 
@@ -87,15 +102,16 @@ namespace С_Question_Parser_and_Analyser
                         AddNextSymb();
                         while (IsSymbDigit(pos + 1)) AddNextSymb();
 
-                        if (!IsSymbEmpty(pos + 1) || !IsSymbSeparator(pos + 1)) return;  //error
+                        if (!IsSymbEmpty(pos + 1) && !IsSymbSeparator(pos + 1)) { errorText = "Неверное число"; break; }  //error
 
                         AddLex(4);
                         continue;
                     }
-                    else if (!IsSymbEmpty(pos + 1) && !IsSymbSeparator(pos + 1)) return;  //error
+                    else if (!IsSymbEmpty(pos + 1) && !IsSymbSeparator(pos + 1)) { errorText = "Неверное число"; break; }  //error
                     AddLex(4);
                     continue;
                 }
+                //идентификаторы и ключевые слова
                 else if (IsSymbLetter(pos))
                 {
                     curLex += inputText[pos];
@@ -104,19 +120,25 @@ namespace С_Question_Parser_and_Analyser
                     if (reservedWords.IndexOf(curLex) == -1) AddLex(2);
                     else AddLex(0);
                 }
+                //комментарии
                 else if (inputText[pos] == '/')
                 {
-                    if (inputText[pos+1] == '*')
+                    if (inputText[pos + 1] == '*')
                     {
                         pos++;
-                        while (true)
+                        int posTemp = pos;
+                        while (posTemp < (inputText.Length - 1))
                         {
-                            if (pos == (inputText.Length - 1)) return; //error
-                            if (inputText[pos++] == '*')
+                            if (inputText[posTemp++] == '*')
                             {
-                                if (inputText[pos++] == '/') break;
+                                if (inputText[posTemp++] == '/') 
+                                { 
+                                    pos = posTemp; 
+                                    break; 
+                                }
                             }
                         }
+                        if (posTemp >= (inputText.Length - 1)) { errorText = "Комментарий не закрыт"; break; } //error
                     }
                     else
                     {
@@ -125,11 +147,12 @@ namespace С_Question_Parser_and_Analyser
                     }
                     continue;
                 }
+                //строковые константы
                 else if (inputText[pos] == '"')
                 {
-                    while (true)
+                    bool err = false;
+                    while (pos < (inputText.Length - 1))
                     {
-                        if (pos == (inputText.Length - 1)) return; //error
 
                         if (inputText[pos++] == '\\')
                         {
@@ -137,16 +160,34 @@ namespace С_Question_Parser_and_Analyser
                             continue;
                         }
                         else if (inputText[pos] == '"') break;
+                        else if (inputText[pos] == '\n')
+                        {
+                            err = true;
+                            break;
+                        }
                         else curLex += inputText[pos];
                     }
+                    if (err) { errorText = "В строке отсутсвует закрывающая кавычка"; break; }; //error
+
                     AddLex(3);
                     continue;
 
                 }
+                else { errorText = "Неизвестный символ"; break; };
 
             }
 
 
+            if (pos >= (inputText.Length - 1)) return;
+            else
+            {
+                int stringNum = 1;
+                for (int i = 0; i < pos; i++)
+                {
+                    if (inputText[i]=='\n') stringNum++;
+                }
+                MessageBox.Show("Ошибка в строке " + stringNum + "\n" + errorText);
+            }
 
         }
 
@@ -154,7 +195,7 @@ namespace С_Question_Parser_and_Analyser
         char AddNextSymb()
         {
             pos++;
-            curLex+=inputText[pos];
+            curLex += inputText[pos];
             return inputText[pos];
         }
 
@@ -188,7 +229,7 @@ namespace С_Question_Parser_and_Analyser
                     }
                 case 4:
                     {
-                        double curLexD = Convert.ToDouble(curLex);
+                        double curLexD = double.Parse(curLex, System.Globalization.CultureInfo.InvariantCulture);
                         if (numericConst.IndexOf(curLexD) == -1) numericConst.Add(curLexD);
                         lexID = numericConst.IndexOf(curLexD);
                         break;
@@ -205,11 +246,11 @@ namespace С_Question_Parser_and_Analyser
         bool IsSymbLetter(int pos)
         {
             char c = inputText[pos];
-            if (c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f' || c == 'g' || c == 'h' || c == 'i' 
-                || c == 'j' || c == 'k' || c == 'l' || c == 'm' || c == 'n' || c == 'o' || c == 'p' || c == 'q' || c == 'r' 
-                || c == 's' || c == 't' || c == 'u' || c == 'v' || c == 'w' || c == 'x' || c == 'y' || c == 'z' || c == '_' 
-                || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F' || c == 'G' || c == 'H' || c == 'I' 
-                || c == 'J' || c == 'K' || c == 'L' || c == 'M' || c == 'N' || c == 'O' || c == 'P' || c == 'Q' || c == 'R' 
+            if (c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f' || c == 'g' || c == 'h' || c == 'i'
+                || c == 'j' || c == 'k' || c == 'l' || c == 'm' || c == 'n' || c == 'o' || c == 'p' || c == 'q' || c == 'r'
+                || c == 's' || c == 't' || c == 'u' || c == 'v' || c == 'w' || c == 'x' || c == 'y' || c == 'z' || c == '_'
+                || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F' || c == 'G' || c == 'H' || c == 'I'
+                || c == 'J' || c == 'K' || c == 'L' || c == 'M' || c == 'N' || c == 'O' || c == 'P' || c == 'Q' || c == 'R'
                 || c == 'S' || c == 'T' || c == 'U' || c == 'V' || c == 'W' || c == 'X' || c == 'Y' || c == 'Z') return true;
             return false;
         }
@@ -217,7 +258,7 @@ namespace С_Question_Parser_and_Analyser
         bool IsSymbSeparator(int pos)
         {
             char c = inputText[pos];
-            if (c == ';' || c == '.' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '|' || c == '&' 
+            if (c == ';' || c == '.' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '|' || c == '&'
                 || c == '=' || c == '!' || c == '<' || c == '>' || c == '*' || c == '/' || c == '+' || c == '-') return true;
             return false;
         }
@@ -233,7 +274,7 @@ namespace С_Question_Parser_and_Analyser
         bool IsSymbDigit(int pos)
         {
             char c = inputText[pos];
-            if (c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9' 
+            if (c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9'
                 || c == '0') return true;
             return false;
         }
@@ -277,7 +318,7 @@ namespace С_Question_Parser_and_Analyser
                         case 4:
                             {
                                 type = "Число";
-                                lex = Convert.ToString(numericConst[prog[i].number]);
+                                lex = numericConst[prog[i].number].ToString();
                                 break;
                             }
                     }
