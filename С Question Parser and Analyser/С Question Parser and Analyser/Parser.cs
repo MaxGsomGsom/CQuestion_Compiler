@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics.Contracts;
 
 namespace С_Question_Parser_and_Analyser
 {
@@ -46,34 +47,115 @@ namespace С_Question_Parser_and_Analyser
             identifers = new List<string>();
             stringConst = new List<string>();
             numericConst = new List<double>();
-            curLex = "";
 
 
-            while (pos<inputText.Length-1)
+
+            while (pos<(inputText.Length-1))
             {
+                curLex = "";
                 pos++;
 
-                if (IsEmptyChar(false)) continue;
-
-                curLex += inputText[pos];
-
-
-                if (IsSeparatorChar(false) && !IsSeparatorChar(true))
+                if (IsSymbEmpty(pos)) continue;
+                else if (inputText[pos] == '(' || inputText[pos] == ')' || inputText[pos] == ';' || inputText[pos] == '{'
+                    || inputText[pos] == '}' || inputText[pos] == ',' || inputText[pos] == '.' || inputText[pos] == '*')
                 {
+                    curLex += inputText[pos];
                     AddLex(1);
                     continue;
                 }
-                if (!IsSeparatorChar(false) && !IsEmptyChar(false) && (IsSeparatorChar(true) || IsEmptyChar(true)))
+                else if (inputText[pos] == '=' || inputText[pos] == '>' || inputText[pos] == '<' || inputText[pos] == '!')
                 {
-                    if (IsItReservedWord()) AddLex(0);
-                    else AddLex(2);
+                    curLex += inputText[pos];
+                    if (inputText[pos + 1] == '=') AddNextSymb();
+                    AddLex(1);
                     continue;
+                }
+                else if (inputText[pos] == '|' || inputText[pos] == '&' || inputText[pos] == '-' || inputText[pos] == '+')
+                {
+                    curLex += inputText[pos];
+                    if (inputText[pos + 1] == inputText[pos]) AddNextSymb();
+                    AddLex(1);
+                    continue;
+                }
+                else if (IsSymbDigit(pos))
+                {
+                    curLex += inputText[pos];
+                    while (IsSymbDigit(pos + 1)) AddNextSymb();
+
+                    if (inputText[pos + 1] == '.')
+                    {
+                        AddNextSymb();
+                        while (IsSymbDigit(pos + 1)) AddNextSymb();
+
+                        if (!IsSymbEmpty(pos + 1) || !IsSymbSeparator(pos + 1)) return;  //error
+
+                        AddLex(4);
+                        continue;
+                    }
+                    else if (!IsSymbEmpty(pos + 1) && !IsSymbSeparator(pos + 1)) return;  //error
+                    AddLex(4);
+                    continue;
+                }
+                else if (IsSymbLetter(pos))
+                {
+                    curLex += inputText[pos];
+                    while (IsSymbLetter(pos + 1) || IsSymbDigit(pos + 1)) AddNextSymb();
+
+                    if (reservedWords.IndexOf(curLex) == -1) AddLex(2);
+                    else AddLex(0);
+                }
+                else if (inputText[pos] == '/')
+                {
+                    if (inputText[pos+1] == '*')
+                    {
+                        pos++;
+                        while (true)
+                        {
+                            if (pos == (inputText.Length - 1)) return; //error
+                            if (inputText[pos++] == '*')
+                            {
+                                if (inputText[pos++] == '/') break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        curLex += inputText[pos];
+                        AddLex(1);
+                    }
+                    continue;
+                }
+                else if (inputText[pos] == '"')
+                {
+                    while (true)
+                    {
+                        if (pos == (inputText.Length - 1)) return; //error
+
+                        if (inputText[pos++] == '\\')
+                        {
+                            AddNextSymb();
+                            continue;
+                        }
+                        else if (inputText[pos] == '"') break;
+                        else curLex += inputText[pos];
+                    }
+                    AddLex(3);
+                    continue;
+
                 }
 
             }
 
 
 
+        }
+
+
+        char AddNextSymb()
+        {
+            pos++;
+            curLex+=inputText[pos];
+            return inputText[pos];
         }
 
         void AddLex(int type)
@@ -98,6 +180,19 @@ namespace С_Question_Parser_and_Analyser
                         lexID = identifers.IndexOf(curLex);
                         break;
                     }
+                case 3:
+                    {
+                        if (stringConst.IndexOf(curLex) == -1) stringConst.Add(curLex);
+                        lexID = stringConst.IndexOf(curLex);
+                        break;
+                    }
+                case 4:
+                    {
+                        double curLexD = Convert.ToDouble(curLex);
+                        if (numericConst.IndexOf(curLexD) == -1) numericConst.Add(curLexD);
+                        lexID = numericConst.IndexOf(curLexD);
+                        break;
+                    }
             }
 
             Lex buf = new Lex();
@@ -107,27 +202,39 @@ namespace С_Question_Parser_and_Analyser
             curLex = "";
         }
 
-        bool IsSeparatorChar(bool next)
+        bool IsSymbLetter(int pos)
         {
-            char c;
-            if (next) c = inputText[pos + 1];
-            else c = inputText[pos];
-            if (c == ';' || c == '.' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '|' || c == '&' || c == '=' || c == '!' || c == '<' || c == '>' || c == '*' || c == '/' || c == '+' || c == '-') return true;
+            char c = inputText[pos];
+            if (c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f' || c == 'g' || c == 'h' || c == 'i' 
+                || c == 'j' || c == 'k' || c == 'l' || c == 'm' || c == 'n' || c == 'o' || c == 'p' || c == 'q' || c == 'r' 
+                || c == 's' || c == 't' || c == 'u' || c == 'v' || c == 'w' || c == 'x' || c == 'y' || c == 'z' || c == '_' 
+                || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F' || c == 'G' || c == 'H' || c == 'I' 
+                || c == 'J' || c == 'K' || c == 'L' || c == 'M' || c == 'N' || c == 'O' || c == 'P' || c == 'Q' || c == 'R' 
+                || c == 'S' || c == 'T' || c == 'U' || c == 'V' || c == 'W' || c == 'X' || c == 'Y' || c == 'Z') return true;
             return false;
         }
 
-        bool IsItReservedWord()
+        bool IsSymbSeparator(int pos)
         {
-            if (curLex == "using" || curLex == "namespace" || curLex == "class" || curLex == "void" || curLex == "string" || curLex == "bool" || curLex == "int" || curLex == "break" || curLex == "continue" || curLex == "return" || curLex == "for" || curLex == "if" || curLex == "else" || curLex == "true" || curLex == "false") return true;
+            char c = inputText[pos];
+            if (c == ';' || c == '.' || c == '{' || c == '}' || c == '(' || c == ')' || c == ',' || c == '|' || c == '&' 
+                || c == '=' || c == '!' || c == '<' || c == '>' || c == '*' || c == '/' || c == '+' || c == '-') return true;
             return false;
         }
 
-        bool IsEmptyChar(bool next)
+
+        bool IsSymbEmpty(int pos)
         {
-            char c;
-            if (next) c = inputText[pos + 1];
-            else c = inputText[pos];
+            char c = inputText[pos];
             if (c == ' ' || c == '\n' || c == '\r') return true;
+            return false;
+        }
+
+        bool IsSymbDigit(int pos)
+        {
+            char c = inputText[pos];
+            if (c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9' 
+                || c == '0') return true;
             return false;
         }
 
@@ -137,31 +244,43 @@ namespace С_Question_Parser_and_Analyser
 
             for (int i = 0; i < prog.Count; i++)
             {
-                string num = (i+1).ToString();
+                string num = (i + 1).ToString();
                 string type = "";
                 string lex = "";
-                if (prog[i].number!=-1)
-                switch (prog[i].type)
-                {
-                    case 0:
-                        {
-                            type = "Зарезервированное слово";
-                            lex = reservedWords[prog[i].number];
-                            break;
-                        }
-                    case 1:
-                        {
-                            type = "Значащий разделитель";
-                            lex = separators[prog[i].number];
-                            break;
-                        }
-                    case 2:
-                        {
-                            type = "Идентификатор";
-                            lex = identifers[prog[i].number];
-                            break;
-                        }
-                }
+                if (prog[i].number != -1)
+                    switch (prog[i].type)
+                    {
+                        case 0:
+                            {
+                                type = "Зарезерв. слово";
+                                lex = reservedWords[prog[i].number];
+                                break;
+                            }
+                        case 1:
+                            {
+                                type = "Разделитель";
+                                lex = separators[prog[i].number];
+                                break;
+                            }
+                        case 2:
+                            {
+                                type = "Идентификатор";
+                                lex = identifers[prog[i].number];
+                                break;
+                            }
+                        case 3:
+                            {
+                                type = "Строка";
+                                lex = stringConst[prog[i].number];
+                                break;
+                            }
+                        case 4:
+                            {
+                                type = "Число";
+                                lex = Convert.ToString(numericConst[prog[i].number]);
+                                break;
+                            }
+                    }
 
                 string[] outLex = { num, type, lex };
                 output.Add(outLex);

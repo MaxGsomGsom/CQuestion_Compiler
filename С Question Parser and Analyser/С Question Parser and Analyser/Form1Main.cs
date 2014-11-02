@@ -29,6 +29,8 @@ namespace С_Question_Parser_and_Analyser
             pars = new Parser(inputText);
             pars.Parse();
 
+            listView1.Items.Clear();
+
             List<string[]> lexes = pars.GetLexes();
 
             for (int i = 0; i < lexes.Count; i++)
