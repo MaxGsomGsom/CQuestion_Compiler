@@ -1,10 +1,14 @@
-﻿using System;
+﻿using System; 
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics.Contracts;
 using System.Windows.Forms;
+
+
+//поправить плюс не распознается
+
 
 namespace С_Question_Parser_and_Analyser
 {
@@ -49,6 +53,8 @@ namespace С_Question_Parser_and_Analyser
             stringConst = new List<string>();
             numericConst = new List<double>();
 
+            bool minusInNum = false;
+
             string errorText = "Неизвестная ошибка";
 
             while (pos < (inputText.Length - 1))
@@ -75,8 +81,13 @@ namespace С_Question_Parser_and_Analyser
                 else if (inputText[pos] == '-' || inputText[pos] == '+')
                 {
                     curLex += inputText[pos];
-                    if (inputText[pos + 1] == inputText[pos]) AddNextSymb();
-                    if (!IsSymbDigit(pos + 1)) AddLex(1);
+                    if (IsSymbLetter(pos - 1) && inputText[pos + 1] == inputText[pos])
+                    {
+                        AddNextSymb();
+                        AddLex(1);
+                    }
+                    else if (!IsSymbDigit(pos + 1) || inputText[pos] == '+') AddLex(1);
+                    else minusInNum = true;
                     continue;
                 }
                 else if (inputText[pos] == '|' || inputText[pos] == '&')
@@ -93,7 +104,7 @@ namespace С_Question_Parser_and_Analyser
                 //числовые константы
                 else if (IsSymbDigit(pos))
                 {
-                    if (inputText[pos - 1] == '-') curLex += inputText[pos - 1];
+                    if (inputText[pos - 1] == '-' && minusInNum) curLex += inputText[pos - 1];
                     curLex += inputText[pos];
                     while (IsSymbDigit(pos + 1)) AddNextSymb();
 
@@ -109,13 +120,14 @@ namespace С_Question_Parser_and_Analyser
                     }
                     else if (!IsSymbEmpty(pos + 1) && !IsSymbSeparator(pos + 1)) { errorText = "Неверное число"; break; }  //error
                     AddLex(4);
+                    minusInNum = false;
                     continue;
                 }
                 //идентификаторы и ключевые слова
                 else if (IsSymbLetter(pos))
                 {
                     curLex += inputText[pos];
-                    while (IsSymbLetter(pos + 1) || IsSymbDigit(pos + 1)) AddNextSymb();
+                    while (IsSymbLetter(pos + 1)) AddNextSymb(); 
 
                     if (reservedWords.IndexOf(curLex) == -1) AddLex(2);
                     else AddLex(0);
