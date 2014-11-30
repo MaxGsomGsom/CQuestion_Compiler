@@ -13,7 +13,7 @@ namespace С_Question_Parser_and_Analyser
 {
     public partial class Form1Main : Form
     {
-        Parser pars;
+        LexParser pars;
         public Form1Main()
         {
             InitializeComponent();
@@ -28,12 +28,12 @@ namespace С_Question_Parser_and_Analyser
 
             string inputText = File.ReadAllText(openDialog.FileName, Encoding.GetEncoding(1251));
 
-            pars = new Parser(inputText);
+            pars = new LexParser(inputText);
             pars.Parse();
 
             listView1.Items.Clear();
 
-            List<string[]> lexes = pars.GetLexes();
+            List<string[]> lexes = pars.GetLexesToOut();
 
             for (int i = 0; i < lexes.Count; i++)
             {
