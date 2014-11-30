@@ -7,12 +7,19 @@ using System.Diagnostics.Contracts;
 using System.Windows.Forms;
 
 
-//поправить плюс не распознается
-
 
 namespace С_Question_Parser_and_Analyser
 {
-    public class Parser
+    enum LexType
+    {
+        reserv,
+        separ,
+        id,
+        str,
+        num
+    }
+
+    public class LexParser
     {
         //тип тексемы 0
         static string[] reservedWordsBuf = {"using", "namespace", "class", "void",
@@ -40,7 +47,7 @@ namespace С_Question_Parser_and_Analyser
         string inputText;
         string curLex;
 
-        public Parser(string inputText)
+        public LexParser(string inputText)
         {
             this.inputText = inputText;
         }
@@ -68,14 +75,14 @@ namespace С_Question_Parser_and_Analyser
                     || inputText[pos] == '}' || inputText[pos] == ',' || inputText[pos] == '.' || inputText[pos] == '*')
                 {
                     curLex += inputText[pos];
-                    AddLex(1);
+                    AddLex(LexType.separ);
                     continue;
                 }
                 else if (inputText[pos] == '=' || inputText[pos] == '>' || inputText[pos] == '<' || inputText[pos] == '!')
                 {
                     curLex += inputText[pos];
                     if (inputText[pos + 1] == '=') AddNextSymb();
-                    AddLex(1);
+                    AddLex(LexType.separ);
                     continue;
                 }
                 else if (inputText[pos] == '-' || inputText[pos] == '+')
@@ -84,9 +91,9 @@ namespace С_Question_Parser_and_Analyser
                     if (IsSymbLetter(pos - 1) && inputText[pos + 1] == inputText[pos])
                     {
                         AddNextSymb();
-                        AddLex(1);
+                        AddLex(LexType.separ);
                     }
-                    else if (!IsSymbDigit(pos + 1) || inputText[pos] == '+') AddLex(1);
+                    else if (!IsSymbDigit(pos + 1) || inputText[pos] == '+') AddLex(LexType.separ);
                     else minusInNum = true;
                     continue;
                 }
@@ -96,7 +103,7 @@ namespace С_Question_Parser_and_Analyser
                     if (inputText[pos + 1] == inputText[pos])
                     {
                         AddNextSymb();
-                        AddLex(1);
+                        AddLex(LexType.separ);
                         continue;
                     }
                     else { errorText = "Неверная логическая операция"; break; }; //error
@@ -115,11 +122,11 @@ namespace С_Question_Parser_and_Analyser
 
                         if (!IsSymbEmpty(pos + 1) && !IsSymbSeparator(pos + 1)) { errorText = "Неверное число"; break; }  //error
 
-                        AddLex(4);
+                        AddLex(LexType.num);
                         continue;
                     }
                     else if (!IsSymbEmpty(pos + 1) && !IsSymbSeparator(pos + 1)) { errorText = "Неверное число"; break; }  //error
-                    AddLex(4);
+                    AddLex(LexType.num);
                     minusInNum = false;
                     continue;
                 }
@@ -129,8 +136,8 @@ namespace С_Question_Parser_and_Analyser
                     curLex += inputText[pos];
                     while (IsSymbLetter(pos + 1)) AddNextSymb(); 
 
-                    if (reservedWords.IndexOf(curLex) == -1) AddLex(2);
-                    else AddLex(0);
+                    if (reservedWords.IndexOf(curLex) == -1) AddLex(LexType.id);
+                    else AddLex(LexType.reserv);
                 }
                 //комментарии
                 else if (inputText[pos] == '/')
@@ -155,7 +162,7 @@ namespace С_Question_Parser_and_Analyser
                     else
                     {
                         curLex += inputText[pos];
-                        AddLex(1);
+                        AddLex(LexType.separ);
                     }
                     continue;
                 }
@@ -181,7 +188,7 @@ namespace С_Question_Parser_and_Analyser
                     }
                     if (err) { errorText = "В строке отсутсвует закрывающая кавычка"; break; }; //error
 
-                    AddLex(3);
+                    AddLex(LexType.str);
                     continue;
 
                 }
@@ -211,35 +218,35 @@ namespace С_Question_Parser_and_Analyser
             return inputText[pos];
         }
 
-        void AddLex(int type)
+        void AddLex(LexType type)
         {
             int lexID = 0;
 
             switch (type)
             {
-                case 0:
+                case LexType.reserv:
                     {
                         lexID = reservedWords.IndexOf(curLex);
                         break;
                     }
-                case 1:
+                case LexType.separ:
                     {
                         lexID = separators.IndexOf(curLex);
                         break;
                     }
-                case 2:
+                case LexType.id:
                     {
                         if (identifers.IndexOf(curLex) == -1) identifers.Add(curLex);
                         lexID = identifers.IndexOf(curLex);
                         break;
                     }
-                case 3:
+                case LexType.str:
                     {
                         if (stringConst.IndexOf(curLex) == -1) stringConst.Add(curLex);
                         lexID = stringConst.IndexOf(curLex);
                         break;
                     }
-                case 4:
+                case LexType.num:
                     {
                         double curLexD = double.Parse(curLex, System.Globalization.CultureInfo.InvariantCulture);
                         if (numericConst.IndexOf(curLexD) == -1) numericConst.Add(curLexD);
@@ -291,62 +298,70 @@ namespace С_Question_Parser_and_Analyser
             return false;
         }
 
-        public List<string[]> GetLexes()
+        public List<string[]> GetLexesToOut()
         {
             List<string[]> output = new List<string[]>();
 
-            for (int i = 0; i < prog.Count; i++)
-            {
-                string num = (i + 1).ToString();
-                string type = "";
-                string lex = "";
-                if (prog[i].number != -1)
-                    switch (prog[i].type)
-                    {
-                        case 0:
-                            {
-                                type = "Зарезерв. слово";
-                                lex = reservedWords[prog[i].number];
-                                break;
-                            }
-                        case 1:
-                            {
-                                type = "Разделитель";
-                                lex = separators[prog[i].number];
-                                break;
-                            }
-                        case 2:
-                            {
-                                type = "Идентификатор";
-                                lex = identifers[prog[i].number];
-                                break;
-                            }
-                        case 3:
-                            {
-                                type = "Строка";
-                                lex = stringConst[prog[i].number];
-                                break;
-                            }
-                        case 4:
-                            {
-                                type = "Число";
-                                lex = numericConst[prog[i].number].ToString();
-                                break;
-                            }
-                    }
+                for (int i = 0; i < prog.Count; i++)
+                {
+                    string num = (i + 1).ToString();
+                    string type = "";
+                    string lex = "";
+                    if (prog[i].number != -1)
+                        switch (prog[i].type)
+                        {
+                            case LexType.reserv:
+                                {
+                                    type = "Зарезерв. слово";
+                                    lex = reservedWords[prog[i].number];
+                                    break;
+                                }
+                            case LexType.separ:
+                                {
+                                    type = "Разделитель";
+                                    lex = separators[prog[i].number];
+                                    break;
+                                }
+                            case LexType.id:
+                                {
+                                    type = "Идентификатор";
+                                    lex = identifers[prog[i].number];
+                                    break;
+                                }
+                            case LexType.str:
+                                {
+                                    type = "Строка";
+                                    lex = stringConst[prog[i].number];
+                                    break;
+                                }
+                            case LexType.num:
+                                {
+                                    type = "Число";
+                                    lex = numericConst[prog[i].number].ToString();
+                                    break;
+                                }
+                        }
 
-                string[] outLex = { num, type, lex };
-                output.Add(outLex);
-            }
+                    string[] outLex = { num, type, lex };
+                    output.Add(outLex);
+                } 
+
             return output;
         }
 
+        public List<Lex> Lexes
+        {
+            get
+            {
+                return prog;
+            }
+        }
     }
 
     //лексема
     public struct Lex
     {
-        public int type;
+        public LexType type;
         public int number;
     }
 }
