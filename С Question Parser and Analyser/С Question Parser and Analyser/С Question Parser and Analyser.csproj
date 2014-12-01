@@ -54,6 +54,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyntaxAnalyzer.cs" />
+    <Compile Include="Tree.cs" />
     <EmbeddedResource Include="Form1Main.resx">
       <DependentUpon>Form1Main.cs</DependentUpon>
     </EmbeddedResource>

@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
@@ -39,6 +34,65 @@ namespace С_Question_Parser_and_Analyser
             {
                 listView1.Items.Add(new ListViewItem(lexes[i]));
             }
+
+            SyntaxAnalyzer synAn = new SyntaxAnalyzer(pars.LexesStore);
+            synAn.Analyze();
+
+            treeView1.Nodes.Clear();
+
+            treeView1.BeginUpdate();
+            ViewLexTree(synAn.LexesStore.lexTree, synAn.LexesStore, treeView1.Nodes);
+            treeView1.EndUpdate();
+
         }
+
+        void ViewLexTree(Tree<Lex> lexTree, ProgTextStore progText, TreeNodeCollection nodeCollection)
+        {
+            string lex = "root";
+
+            switch (lexTree.Value.type)
+            {
+                case LexType.reserv:
+                    {
+                        //type = "Зарезерв. слово";
+                        if (lexTree.Value.number == -1) lex = "X";
+                        else lex = progText.reservedWords[lexTree.Value.number];
+                        break;
+                    }
+                case LexType.separ:
+                    {
+                        //type = "Разделитель";
+                        lex = progText.separators[lexTree.Value.number];
+                        break;
+                    }
+                case LexType.id:
+                    {
+                        //type = "Идентификатор";
+                        lex = progText.identifers[lexTree.Value.number];
+                        break;
+                    }
+                case LexType.str:
+                    {
+                        //type = "Строка";
+                        lex = progText.stringConst[lexTree.Value.number];
+                        break;
+                    }
+                case LexType.num:
+                    {
+                        //type = "Число";
+                        lex = progText.numericConst[lexTree.Value.number].ToString();
+                        break;
+                    }
+            }
+
+            nodeCollection.Add(lex);
+
+            for (int i = 0; i < lexTree.Children.Count; i++)
+            {
+                ViewLexTree(lexTree.Children[i], progText, nodeCollection[nodeCollection.Count - 1].Nodes);
+            }
+
+        }
+
     }
 }

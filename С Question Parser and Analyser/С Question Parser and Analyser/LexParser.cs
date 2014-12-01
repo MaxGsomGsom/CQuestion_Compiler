@@ -10,7 +10,49 @@ using System.Windows.Forms;
 
 namespace С_Question_Parser_and_Analyser
 {
-    enum LexType
+
+    public class ProgTextStore
+    {
+        //тип тексемы 0
+        string[] reservedWordsBuf = {"using", "namespace", "class", "void",
+                                            "string", "bool", "int", "break", 
+                                            "continue", "return", "for", "if", 
+                                            "else", "true", "false"};
+        public List<string> reservedWords;
+        //тип тексемы 1
+        string[] separatorsBuf = {";", ".", "{", "}", "(", ")", ",", 
+                                         "=", "||", "&&", "==", "!=", 
+                                         "<", ">", ">=", "<=", "+", 
+                                         "-", "*", "/", "!", "++", "--"};
+        public List<string> separators;
+        //тип лексемы 2
+        public List<string> identifers;
+        //тип лексемы 3
+        public List<string> stringConst;
+        //тип лексемы 4
+        public List<double> numericConst;
+
+        //все лексемы
+        public List<Lex> lexList;
+        public Tree<Lex> lexTree;
+
+        public ProgTextStore()
+        {
+            reservedWords = new List<string>(reservedWordsBuf);
+            separators = new List<string>(separatorsBuf);
+            identifers = new List<string>();
+            stringConst = new List<string>();
+            numericConst = new List<double>();
+            lexList = new List<Lex>();
+            lexTree = new Tree<Lex>();
+        }
+
+    }
+    
+    
+    
+    
+    public enum LexType
     {
         reserv,
         separ,
@@ -19,29 +61,10 @@ namespace С_Question_Parser_and_Analyser
         num
     }
 
+
     public class LexParser
     {
-        //тип тексемы 0
-        static string[] reservedWordsBuf = {"using", "namespace", "class", "void",
-                                            "string", "bool", "int", "break", 
-                                            "continue", "return", "for", "if", 
-                                            "else", "true", "false"};
-        static List<string> reservedWords = new List<string>(reservedWordsBuf);
-        //тип тексемы 1
-        static string[] separatorsBuf = {";", ".", "{", "}", "(", ")", ",", 
-                                         "=", "||", "&&", "==", "!=", 
-                                         "<", ">", ">=", "<=", "+", 
-                                         "-", "*", "/", "!", "++", "--"};
-        static List<string> separators = new List<string>(separatorsBuf);
-        //тип лексемы 2
-        List<string> identifers;
-        //тип лексемы 3
-        List<string> stringConst;
-        //тип лексемы 4
-        List<double> numericConst;
-
-        //все лексемы
-        List<Lex> prog = new List<Lex>();
+        ProgTextStore outProgText = new ProgTextStore();
 
         int pos;
         string inputText;
@@ -55,10 +78,6 @@ namespace С_Question_Parser_and_Analyser
         public void Parse()
         {
             pos = -1;
-            prog = new List<Lex>();
-            identifers = new List<string>();
-            stringConst = new List<string>();
-            numericConst = new List<double>();
 
             bool minusInNum = false;
 
@@ -134,9 +153,9 @@ namespace С_Question_Parser_and_Analyser
                 else if (IsSymbLetter(pos))
                 {
                     curLex += inputText[pos];
-                    while (IsSymbLetter(pos + 1)) AddNextSymb(); 
+                    while (IsSymbLetter(pos + 1) || IsSymbDigit(pos+1)) AddNextSymb(); 
 
-                    if (reservedWords.IndexOf(curLex) == -1) AddLex(LexType.id);
+                    if (outProgText.reservedWords.IndexOf(curLex) == -1) AddLex(LexType.id);
                     else AddLex(LexType.reserv);
                 }
                 //комментарии
@@ -226,31 +245,31 @@ namespace С_Question_Parser_and_Analyser
             {
                 case LexType.reserv:
                     {
-                        lexID = reservedWords.IndexOf(curLex);
+                        lexID = outProgText.reservedWords.IndexOf(curLex);
                         break;
                     }
                 case LexType.separ:
                     {
-                        lexID = separators.IndexOf(curLex);
+                        lexID = outProgText.separators.IndexOf(curLex);
                         break;
                     }
                 case LexType.id:
                     {
-                        if (identifers.IndexOf(curLex) == -1) identifers.Add(curLex);
-                        lexID = identifers.IndexOf(curLex);
+                        if (outProgText.identifers.IndexOf(curLex) == -1) outProgText.identifers.Add(curLex);
+                        lexID = outProgText.identifers.IndexOf(curLex);
                         break;
                     }
                 case LexType.str:
                     {
-                        if (stringConst.IndexOf(curLex) == -1) stringConst.Add(curLex);
-                        lexID = stringConst.IndexOf(curLex);
+                        if (outProgText.stringConst.IndexOf(curLex) == -1) outProgText.stringConst.Add(curLex);
+                        lexID = outProgText.stringConst.IndexOf(curLex);
                         break;
                     }
                 case LexType.num:
                     {
                         double curLexD = double.Parse(curLex, System.Globalization.CultureInfo.InvariantCulture);
-                        if (numericConst.IndexOf(curLexD) == -1) numericConst.Add(curLexD);
-                        lexID = numericConst.IndexOf(curLexD);
+                        if (outProgText.numericConst.IndexOf(curLexD) == -1) outProgText.numericConst.Add(curLexD);
+                        lexID = outProgText.numericConst.IndexOf(curLexD);
                         break;
                     }
             }
@@ -258,7 +277,7 @@ namespace С_Question_Parser_and_Analyser
             Lex buf = new Lex();
             buf.type = type;
             buf.number = lexID;
-            prog.Add(buf);
+            outProgText.lexList.Add(buf);
             curLex = "";
         }
 
@@ -302,42 +321,42 @@ namespace С_Question_Parser_and_Analyser
         {
             List<string[]> output = new List<string[]>();
 
-                for (int i = 0; i < prog.Count; i++)
+            for (int i = 0; i < outProgText.lexList.Count; i++)
                 {
                     string num = (i + 1).ToString();
                     string type = "";
                     string lex = "";
-                    if (prog[i].number != -1)
-                        switch (prog[i].type)
+                    if (outProgText.lexList[i].number != -1)
+                        switch (outProgText.lexList[i].type)
                         {
                             case LexType.reserv:
                                 {
                                     type = "Зарезерв. слово";
-                                    lex = reservedWords[prog[i].number];
+                                    lex = outProgText.reservedWords[outProgText.lexList[i].number];
                                     break;
                                 }
                             case LexType.separ:
                                 {
                                     type = "Разделитель";
-                                    lex = separators[prog[i].number];
+                                    lex = outProgText.separators[outProgText.lexList[i].number];
                                     break;
                                 }
                             case LexType.id:
                                 {
                                     type = "Идентификатор";
-                                    lex = identifers[prog[i].number];
+                                    lex = outProgText.identifers[outProgText.lexList[i].number];
                                     break;
                                 }
                             case LexType.str:
                                 {
                                     type = "Строка";
-                                    lex = stringConst[prog[i].number];
+                                    lex = outProgText.stringConst[outProgText.lexList[i].number];
                                     break;
                                 }
                             case LexType.num:
                                 {
                                     type = "Число";
-                                    lex = numericConst[prog[i].number].ToString();
+                                    lex = outProgText.numericConst[outProgText.lexList[i].number].ToString();
                                     break;
                                 }
                         }
@@ -349,11 +368,11 @@ namespace С_Question_Parser_and_Analyser
             return output;
         }
 
-        public List<Lex> Lexes
+        public ProgTextStore LexesStore
         {
             get
             {
-                return prog;
+                return outProgText;
             }
         }
     }
