@@ -14,13 +14,14 @@ namespace С_Question_Parser_and_Analyser
         ProgTextStore progStore;
         int lexPos = 0;
         Tree<Lex> curNode;
+        bool errorShowed = false;
 
         public SyntaxAnalyzer(ProgTextStore progStore)
         {
             this.progStore = progStore;
             Lex root = new Lex();
-            root.type = LexType.reserv;
-            root.number = -1;
+            root.type = LexType.unTerm;
+            root.number = 0;
             curNode = new Tree<Lex>(root);
         }
 
@@ -29,6 +30,8 @@ namespace С_Question_Parser_and_Analyser
 
             curNode = curNode.Root;
             lexPos = 0;
+
+            errorShowed = false;
 
             ProgF();
 
@@ -72,11 +75,11 @@ namespace С_Question_Parser_and_Analyser
             lexPos++;
         }
 
-        void AddEmptyNode()
+        void AddEmptyNode(int unTerm)
         {
             Lex p = new Lex();
-            p.type = LexType.reserv;
-            p.number = -1;
+            p.type = LexType.unTerm;
+            p.number = unTerm;
 
             curNode.Add(new Tree<Lex>(p));
         }
@@ -103,6 +106,14 @@ namespace С_Question_Parser_and_Analyser
             return false;
         }
 
+        void ShowError(string text)
+        {
+            if (!errorShowed)
+            {
+                MessageBox.Show("Ошибка в лексеме " + (lexPos+1) + "\nОжидалась лексема: "+ text, "Ошибка синтаксического разбора", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                errorShowed = true;
+            }
+        }
 
 
         void ProgF()
@@ -110,7 +121,7 @@ namespace С_Question_Parser_and_Analyser
 
             while (GetCurLex().type == LexType.reserv && GetCurLex().number == 0) 
             {
-                AddEmptyNode();
+                AddEmptyNode(1);
                 UsingF();
             }
 
@@ -118,23 +129,23 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("namespace");
 
             if (GetCurLex().type == LexType.id)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 2)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("{");
 
             while (GetCurLex().type == LexType.reserv && GetCurLex().number == 2)
             {
-                AddEmptyNode();
+                AddEmptyNode(3);
                 ClassF();
             }
 
@@ -142,7 +153,7 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("}");
 
         }
 
@@ -154,20 +165,20 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("using");
 
             if (GetCurLex().type == LexType.id)
             {
-                AddEmptyNode();
+                AddEmptyNode(2);
                 LibFuncNameF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 0)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError(";");
 
             GoUpTree();
         }
@@ -180,7 +191,7 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
             while (GetCurLex().type == LexType.separ && GetCurLex().number == 1)
             {
@@ -190,7 +201,7 @@ namespace С_Question_Parser_and_Analyser
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("идентификатор");
             }
 
             GoUpTree();
@@ -205,23 +216,23 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("class");
 
             if (GetCurLex().type == LexType.id)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 2)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("{");
 
             while (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6 }))
             {
-                AddEmptyNode();
+                AddEmptyNode(4);
                 FuncF();
             }
 
@@ -229,7 +240,7 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("}");
 
             GoUpTree();
         }
@@ -242,23 +253,23 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("тип функции");
 
             if (GetCurLex().type == LexType.id)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 4)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("(");
 
             if (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6}))
             {
-                AddEmptyNode();
+                AddEmptyNode(5);
                 ParamsF();
             }
 
@@ -266,18 +277,18 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError(")");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 2)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("{");
 
             while (GetCurLex().type == LexType.id || 
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] {3,4,5,6,7,8,9,10,11})))
             {
-                AddEmptyNode();
+                AddEmptyNode(6);
                 OperatorF();
             }
 
@@ -285,7 +296,7 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("}");
 
             GoUpTree();
         }
@@ -298,13 +309,13 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("тип параметра");
 
             if (GetCurLex().type == LexType.id)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
             while (GetCurLex().type == LexType.separ && GetCurLex().number == 6)
             {
@@ -314,13 +325,13 @@ namespace С_Question_Parser_and_Analyser
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("тип параметра");
 
                 if (GetCurLex().type == LexType.id)
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("идентификатор");
             }
 
             GoUpTree();
@@ -332,23 +343,23 @@ namespace С_Question_Parser_and_Analyser
 
             if (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6 }))
             {
-                AddEmptyNode();
+                AddEmptyNode(10);
                 VarDelcarF();
 
                 if (GetCurLex().type == LexType.separ && GetCurLex().number == 0)
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError(";");
             }
             else if (GetCurLex().type == LexType.reserv && GetCurLex().number == 10)
             {
-                AddEmptyNode();
+                AddEmptyNode(11);
                 ForOperatorF();
             }
             else if (GetCurLex().type == LexType.reserv && GetCurLex().number == 11)
             {
-                AddEmptyNode();
+                AddEmptyNode(12);
                 IfOperatorF();
             }
             else if (GetCurLex().type == LexType.reserv && GetCurLex().number == 7)
@@ -359,7 +370,7 @@ namespace С_Question_Parser_and_Analyser
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError(";");
             }
             else if (GetCurLex().type == LexType.reserv && GetCurLex().number == 8)
             {
@@ -369,7 +380,7 @@ namespace С_Question_Parser_and_Analyser
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError(":");
             }
             else if (GetCurLex().type == LexType.reserv && GetCurLex().number == 9)
             {
@@ -384,46 +395,46 @@ namespace С_Question_Parser_and_Analyser
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError(";");
             }
             else if (GetCurLex().type == LexType.id)
             {
                 if (GetNextLex().type == LexType.separ && (GetNextLex().number == 1 || GetNextLex().number == 4))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(7);
                     FuncCallF();
 
                     if (GetCurLex().type == LexType.separ && GetCurLex().number == 0)
                     {
                         AddLexNode();
                     }
-                    else MessageBox.Show("Error");
+                    else ShowError(";");
                 }
                 else if (GetNextLex().type == LexType.separ && GetNextLex().number == 7)
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(9);
                     VarAssignF();
 
                     if (GetCurLex().type == LexType.separ && GetCurLex().number == 0)
                     {
                         AddLexNode();
                     }
-                    else MessageBox.Show("Error");
+                    else ShowError(";");
                 }
                 else if (GetNextLex().type == LexType.separ && (GetNextLex().number == 21 || GetNextLex().number == 22))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(22);
                     IncrF();
 
                     if (GetCurLex().type == LexType.separ && GetCurLex().number == 0)
                     {
                         AddLexNode();
                     }
-                    else MessageBox.Show("Error");
+                    else ShowError(";");
                 }
-                else MessageBox.Show("Error");
+                else ShowError("оператор");
             }
-            else MessageBox.Show("Ожидался оператор");
+            else MessageBox.Show("оператор");
 
             GoUpTree();
         }
@@ -434,22 +445,22 @@ namespace С_Question_Parser_and_Analyser
 
             if (GetCurLex().type == LexType.id)
             {
-                AddEmptyNode();
+                AddEmptyNode(2);
                 LibFuncNameF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 4)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("(");
 
             if (GetCurLex().type == LexType.str || GetCurLex().type == LexType.id || GetCurLex().type == LexType.num ||
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(8);
                 ParamsInF();
             }
 
@@ -457,7 +468,7 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError(")");
 
             GoUpTree();
         }
@@ -470,15 +481,15 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(14);
                 MathF();
             }
             else if (GetCurLex().type == LexType.str)
             {
-                AddEmptyNode();
+                AddEmptyNode(21);
                 StringMathF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор или выражение");
 
             while (GetCurLex().type == LexType.separ && GetCurLex().number == 6)
             {
@@ -488,15 +499,15 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(14);
                     MathF();
                 }
                 else if (GetCurLex().type == LexType.str)
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(21);
                     StringMathF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("идентификатор или выражение");
             }
 
             GoUpTree();
@@ -511,27 +522,27 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 7)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("=");
 
             if (GetCurLex().type == LexType.id || GetCurLex().type == LexType.num ||
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(14);
                 MathF();
             }
             else if (GetCurLex().type == LexType.str)
             {
-                AddEmptyNode();
+                AddEmptyNode(21);
                 StringMathF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор или выражение");
 
             GoUpTree();
         }
@@ -544,13 +555,13 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("тип переменной");
 
             if (GetCurLex().type == LexType.id)
             {
                 if (GetNextLex().type == LexType.separ && GetNextLex().number == 7)
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(9);
                     VarAssignF();
                 }
                 else
@@ -558,9 +569,9 @@ namespace С_Question_Parser_and_Analyser
                     AddLexNode();
                 }
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
-            while (GetNextLex().type == LexType.separ && GetNextLex().number == 6)
+            while (GetCurLex().type == LexType.separ && GetCurLex().number == 6)
             {
                 AddLexNode();
 
@@ -568,7 +579,7 @@ namespace С_Question_Parser_and_Analyser
                 {
                     if (GetNextLex().type == LexType.separ && GetNextLex().number == 7)
                     {
-                        AddEmptyNode();
+                        AddEmptyNode(9);
                         VarAssignF();
                     }
                     else
@@ -576,7 +587,7 @@ namespace С_Question_Parser_and_Analyser
                         AddLexNode();
                     }
                 }
-                else MessageBox.Show("Error");
+                else ShowError("идентификатор");
             }
 
             GoUpTree();
@@ -590,83 +601,84 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("for");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 4)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("(");
 
             if (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6 }))
             {
-                AddEmptyNode();
+                AddEmptyNode(10);
                 VarDelcarF();
             }
             else if (GetCurLex().type == LexType.id)
             {
                 if (GetNextLex().type == LexType.separ && GetNextLex().number == 7)
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(9);
                     VarAssignF();
                 }
                 else if (GetNextLex().type == LexType.separ && (GetNextLex().number == 21 || GetNextLex().number == 22))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(22);
                     IncrF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
             }
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 0)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError(";");
 
             if (GetCurLex().type == LexType.id || GetCurLex().type == LexType.num ||
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(14);
                 MathF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 0)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError(";");
 
             if (GetCurLex().type == LexType.id)
             {
                 if (GetNextLex().type == LexType.separ && GetNextLex().number == 7)
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(9);
                     VarAssignF();
                 }
                 else if (GetNextLex().type == LexType.separ && (GetNextLex().number == 21 || GetNextLex().number == 22))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(22);
                     IncrF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
             }
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 5)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError(")");
 
             if (GetCurLex().type == LexType.id ||
-                (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11 })))
+                (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11 }))
+                || (GetCurLex().type == LexType.separ && GetCurLex().number == 2))
             {
-                AddEmptyNode();
+                AddEmptyNode(13);
                 IfForBodyF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("оператор или блок");
 
             GoUpTree();
         }
@@ -679,48 +691,51 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("if");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 4)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("(");
 
             if (GetCurLex().type == LexType.id || GetCurLex().type == LexType.num ||
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(14);
                 MathF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             if (GetCurLex().type == LexType.separ && GetCurLex().number == 5)
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError(")");
+
 
             if (GetCurLex().type == LexType.id ||
-                (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11 })))
+                (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11 }))
+                || (GetCurLex().type == LexType.separ && GetCurLex().number == 2))
             {
-                AddEmptyNode();
+                AddEmptyNode(13);
                 IfForBodyF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("оператор или блок");
 
             if (GetCurLex().type == LexType.reserv && GetCurLex().number == 12)
             {
                 AddLexNode();
 
                 if (GetCurLex().type == LexType.id ||
-                (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11 })))
+                (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11 }))
+                    || (GetCurLex().type == LexType.separ && GetCurLex().number == 2))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(13);
                     IfForBodyF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("оператор или блок");
             }
 
             GoUpTree();
@@ -733,7 +748,7 @@ namespace С_Question_Parser_and_Analyser
             if (GetCurLex().type == LexType.id ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(6);
                 OperatorF();
             }
             else if (GetCurLex().type == LexType.separ && GetCurLex().number == 2)
@@ -743,7 +758,7 @@ namespace С_Question_Parser_and_Analyser
                 while (GetCurLex().type == LexType.id ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 3, 4, 5, 6, 7, 8, 9, 10, 11 })))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(6);
                     OperatorF();
                 }
 
@@ -751,9 +766,9 @@ namespace С_Question_Parser_and_Analyser
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("}");
             }
-            else MessageBox.Show("Error");
+            else ShowError("оператор или блок");
 
             GoUpTree();
         }
@@ -766,10 +781,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(15);
                 AndF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             while (GetCurLex().type == LexType.separ && GetCurLex().number == 8)
             {
@@ -779,10 +794,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(15);
                     AndF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
             }
 
             GoUpTree();
@@ -796,10 +811,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(16);
                 EqualF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             while (GetCurLex().type == LexType.separ && GetCurLex().number == 9)
             {
@@ -809,10 +824,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(16);
                     EqualF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
             }
 
             GoUpTree();
@@ -826,10 +841,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(17);
                 CompareF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             while (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] {11,10}))
             {
@@ -839,10 +854,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(17);
                     CompareF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
             }
 
             GoUpTree();
@@ -856,10 +871,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(18);
                 PlusF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             while (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 12,13,14,15 }))
             {
@@ -869,10 +884,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(18);
                     PlusF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
             }
 
             GoUpTree();
@@ -886,10 +901,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(19);
                 MultF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             while (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 16,17 }))
             {
@@ -899,10 +914,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(19);
                     MultF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
             }
 
             GoUpTree();
@@ -916,10 +931,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
             {
-                AddEmptyNode();
+                AddEmptyNode(20);
                 UnarF();
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             while (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 18, 19 }))
             {
@@ -929,10 +944,10 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(20);
                     UnarF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
             }
 
             GoUpTree();
@@ -951,12 +966,12 @@ namespace С_Question_Parser_and_Analyser
             {
                 if (GetNextLex().type == LexType.separ && (GetNextLex().number == 21 || GetNextLex().number == 22))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(22);
                     IncrF();
                 }
                 else if (GetNextLex().type == LexType.separ && (GetNextLex().number == 1 || GetNextLex().number == 4))
                 {
-                    AddEmptyNode();
+                    AddEmptyNode(7);
                     FuncCallF();
                 }
                 else
@@ -977,18 +992,18 @@ namespace С_Question_Parser_and_Analyser
                 (GetCurLex().type == LexType.separ && IsTrueLexNum(new int[] { 17, 20, 4 })) ||
                 (GetCurLex().type == LexType.reserv && IsTrueLexNum(new int[] { 13, 14 })))
                 {
-                    AddEmptyNode();
-                    CompareF();
+                    AddEmptyNode(14);
+                    MathF();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("выражение");
 
                 if (GetCurLex().type == LexType.separ && GetCurLex().number == 5)
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError(")");
             }
-            else MessageBox.Show("Error");
+            else ShowError("выражение");
 
             GoUpTree();
         }
@@ -1001,7 +1016,7 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("строковая константа");
 
             while (GetCurLex().type == LexType.separ && GetCurLex().number == 16)
             {
@@ -1011,7 +1026,7 @@ namespace С_Question_Parser_and_Analyser
                 {
                     AddLexNode();
                 }
-                else MessageBox.Show("Error");
+                else ShowError("строковая константа");
             }
 
             GoUpTree();
@@ -1025,15 +1040,43 @@ namespace С_Question_Parser_and_Analyser
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("идентификатор");
 
-            if (GetNextLex().type == LexType.separ && (GetNextLex().number == 21 || GetNextLex().number == 22))
+            if (GetCurLex().type == LexType.separ && (GetCurLex().number == 21 || GetCurLex().number == 22))
             {
                 AddLexNode();
             }
-            else MessageBox.Show("Error");
+            else ShowError("++ или --");
 
             GoUpTree();
         }
+
+        Tree<Lex> OptimizeTreeRecursive(Tree<Lex> lexTree)
+        {
+
+            for (int i = 0; i < lexTree.Children.Count; i++)
+            {
+                OptimizeTreeRecursive(lexTree.Children[i]);
+            }
+
+            if (lexTree.Parent != null && lexTree.Value.type == LexType.unTerm && lexTree.Parent.Children.Count == 1)
+            {
+                for (int i = 0; i < lexTree.Children.Count; i++)
+                {
+                    lexTree.Parent.Add(lexTree.Children[i]);
+                }
+                lexTree.Parent.RemoveChild(lexTree);
+            }
+
+            return lexTree;
+
+        }
+
+        public void OptimizeTree()
+        {
+            progStore.lexTree = OptimizeTreeRecursive(progStore.lexTree);
+        }
     }
+
+    
 }

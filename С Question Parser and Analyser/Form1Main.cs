@@ -37,6 +37,7 @@ namespace С_Question_Parser_and_Analyser
 
             SyntaxAnalyzer synAn = new SyntaxAnalyzer(pars.LexesStore);
             synAn.Analyze();
+            synAn.OptimizeTree();
 
             treeView1.Nodes.Clear();
 
@@ -55,8 +56,7 @@ namespace С_Question_Parser_and_Analyser
                 case LexType.reserv:
                     {
                         //type = "Зарезерв. слово";
-                        if (lexTree.Value.number == -1) lex = "X";
-                        else lex = progText.reservedWords[lexTree.Value.number];
+                        lex = progText.reservedWords[lexTree.Value.number];
                         break;
                     }
                 case LexType.separ:
@@ -83,6 +83,12 @@ namespace С_Question_Parser_and_Analyser
                         lex = progText.numericConst[lexTree.Value.number].ToString();
                         break;
                     }
+                case LexType.unTerm:
+                    {
+                        //type = "нетерминал";
+                        lex = progText.unTerm[lexTree.Value.number].ToString();
+                        break;
+                    }
             }
 
             nodeCollection.Add(lex);
@@ -92,6 +98,16 @@ namespace С_Question_Parser_and_Analyser
                 ViewLexTree(lexTree.Children[i], progText, nodeCollection[nodeCollection.Count - 1].Nodes);
             }
 
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            treeView1.CollapseAll();
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            treeView1.ExpandAll();
         }
 
     }
