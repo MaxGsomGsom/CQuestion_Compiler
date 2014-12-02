@@ -11,57 +11,7 @@ using System.Windows.Forms;
 namespace С_Question_Parser_and_Analyser
 {
 
-    public class ProgTextStore
-    {
-        //тип тексемы 0
-        string[] reservedWordsBuf = {"using", "namespace", "class", "void",
-                                            "string", "bool", "int", "break", 
-                                            "continue", "return", "for", "if", 
-                                            "else", "true", "false"};
-        public List<string> reservedWords;
-        //тип тексемы 1
-        string[] separatorsBuf = {";", ".", "{", "}", "(", ")", ",", 
-                                         "=", "||", "&&", "==", "!=", 
-                                         "<", ">", ">=", "<=", "+", 
-                                         "-", "*", "/", "!", "++", "--"};
-        public List<string> separators;
-        //тип лексемы 2
-        public List<string> identifers;
-        //тип лексемы 3
-        public List<string> stringConst;
-        //тип лексемы 4
-        public List<double> numericConst;
-
-        //все лексемы
-        public List<Lex> lexList;
-        public Tree<Lex> lexTree;
-
-        public ProgTextStore()
-        {
-            reservedWords = new List<string>(reservedWordsBuf);
-            separators = new List<string>(separatorsBuf);
-            identifers = new List<string>();
-            stringConst = new List<string>();
-            numericConst = new List<double>();
-            lexList = new List<Lex>();
-            lexTree = new Tree<Lex>();
-        }
-
-    }
-    
-    
-    
-    
-    public enum LexType
-    {
-        reserv,
-        separ,
-        id,
-        str,
-        num
-    }
-
-
+ 
     public class LexParser
     {
         ProgTextStore outProgText = new ProgTextStore();
@@ -224,7 +174,7 @@ namespace С_Question_Parser_and_Analyser
                 {
                     if (inputText[i]=='\n') stringNum++;
                 }
-                MessageBox.Show("Ошибка в строке " + stringNum + "\n" + errorText);
+                MessageBox.Show("Ошибка в строке " + stringNum + "\n" + errorText, "Ошибка лексического разбора", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
@@ -377,10 +327,4 @@ namespace С_Question_Parser_and_Analyser
         }
     }
 
-    //лексема
-    public struct Lex
-    {
-        public LexType type;
-        public int number;
-    }
 }
