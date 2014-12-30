@@ -46,7 +46,7 @@ namespace С_Question_Parser_and_Analyser
             treeView1.EndUpdate();
 
             CodeGenerator gen = new CodeGenerator(synAn.LexesStore);
-            gen.ExploreTree();
+            textBox1code.Text = gen.ExploreTree().Replace("\n", "\r\n");
 
         }
 
