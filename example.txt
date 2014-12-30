@@ -1,5 +1,5 @@
 using System;
-a--!=!>b<=c;
+
 namespace ConsoleApplication1
 {
     class Program

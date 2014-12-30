@@ -37,13 +37,16 @@ namespace С_Question_Parser_and_Analyser
 
             SyntaxAnalyzer synAn = new SyntaxAnalyzer(pars.LexesStore);
             synAn.Analyze();
-            synAn.OptimizeTree();
+            //synAn.OptimizeTree();
 
             treeView1.Nodes.Clear();
 
             treeView1.BeginUpdate();
             ViewLexTree(synAn.LexesStore.lexTree, synAn.LexesStore, treeView1.Nodes);
             treeView1.EndUpdate();
+
+            CodeGenerator gen = new CodeGenerator(synAn.LexesStore);
+            gen.ExploreTree();
 
         }
 
