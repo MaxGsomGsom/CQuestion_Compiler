@@ -37,7 +37,7 @@ namespace С_Question_Parser_and_Analyser
 
             SyntaxAnalyzer synAn = new SyntaxAnalyzer(pars.LexesStore);
             synAn.Analyze();
-            //synAn.OptimizeTree();
+            //synAn.OptimizeTree();  оптимизация ломает генератор кода
 
             treeView1.Nodes.Clear();
 
