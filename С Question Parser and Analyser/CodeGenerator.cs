@@ -10,6 +10,14 @@ namespace С_Question_Parser_and_Analyser
     {
         ProgTextStore prog;
         string asmText = "";
+        int labelNum = 0;
+
+        struct strgs
+        {
+            public string intStr;
+            public string strStr;
+            public string strConst;
+        };
 
         public CodeGenerator(ProgTextStore prog)
         {
@@ -82,48 +90,32 @@ namespace С_Question_Parser_and_Analyser
 
         void UsingF(Tree<Lex> tree)
         {
-
+            //тут типа добавление библиотек, сделать чтобы вместо систем добавлялись стандартные сишные
         }
 
         void LibFuncNameF(Tree<Lex> tree)
         {
-            //for (int childPos = 0; childPos < tree.Children.Count; childPos++)
-            //{
-            //    if (tree.Children[childPos].Value.type == LexType.id) asmText += prog.identifers[tree.Children[childPos].Value.number];
-            //    else asmText += prog.separators[tree.Children[childPos].Value.number];
-            //}
 
-            //идентификатор функции, продумать для функций ввода вывода
+            //берем только последний идентификатор, так как клссов нет
+            //нужно сделать распознавание принтф, сканф и ещё функцию конвертации строки в число
             asmText += prog.identifers[tree.Children[tree.Children.Count - 1].Value.number];
         }
 
         void ClassF(Tree<Lex> tree)
         {
-            int childPos = 1;
+            //классов нет, хер с ними
 
-            //asmText += "public class " + prog.identifers[tree.Children[childPos].Value.number] + " {\n";
+            GoDeep(3, tree);
 
-            childPos += 2;
-
-            childPos = GoDeep(childPos, tree);
-
-            //asmText += "}\n\n";
         }
 
-
-        struct strgs
-        {
-            public string intStr;
-            public string strStr;
-            public string strConst;
-        };
 
 
         void FuncF(Tree<Lex> tree)
         {
             int childPos = 0;
 
-            asmText += /*"public " +*/ prog.reservedWords[tree.Children[childPos].Value.number];
+            asmText += prog.reservedWords[tree.Children[childPos].Value.number];
             childPos++;
             asmText += " " + prog.identifers[tree.Children[childPos].Value.number] + " (";
             childPos += 2;
@@ -136,7 +128,7 @@ namespace С_Question_Parser_and_Analyser
             str.strStr = "string";
             str.strConst = "";
             str = FindVars(tree, str);
-            if (str.intStr != "int") asmText += str.intStr.Remove(str.intStr.Length - 1) + ";\n";
+            if (str.intStr != "int") asmText += str.intStr.Remove(str.intStr.Length - 1) + ";\n"; //сделать распознавание и замену майн
             if (str.strStr != "string") asmText += str.strStr.Remove(str.strStr.Length - 1) + ";\n";
             if (str.strConst != "") asmText += str.strConst;
 
@@ -146,8 +138,9 @@ namespace С_Question_Parser_and_Analyser
             asmText += "}\n}\n\n";
         }
 
-        //находит переменные ниже по дереву и объявляет их вначале функции, переменные с одинаковыми названиями НЕ переименовывает
+        //находит переменные ниже по дереву и объявляет их вначале функции
         //объявляет строки вначале
+        //сделать чтобы переменные с одинаковыми названиями переименовывались (это в анализаторе)
         strgs FindVars(Tree<Lex> tree, strgs str)
         {
             if (tree.Value.type == LexType.str)
@@ -215,15 +208,15 @@ namespace С_Question_Parser_and_Analyser
             {
                 if (tree.Children[0].Value.number == 7)
                 {
-                    //break
+                    //break сделать
                 }
                 else if (tree.Children[0].Value.number == 8)
                 {
-                    //continue
+                    //continue сделать
                 }
                 else if (tree.Children[0].Value.number == 9)
                 {
-                    //return
+                    //return сделать
                 }
             }
 
@@ -271,7 +264,7 @@ namespace С_Question_Parser_and_Analyser
 
         void VarDelcarF(Tree<Lex> tree)
         {
-            //нужно пропускать объявление и только присваивать
+            //объявление пропускается и идет только присваивание
             for (int i = 1; i < tree.Children.Count; i++)
             {
                 if (tree.Children[i].Value.type == LexType.unTerm)
@@ -283,10 +276,24 @@ namespace С_Question_Parser_and_Analyser
 
         void ForOperatorF(Tree<Lex> tree)
         {
+            //не предусмотрена ситуация если в заголовке цикла пустые блоки
+            labelNum += 2;
+            int l1 = labelNum, l2 = labelNum+1;
 
+            GoDeep(2, tree);//объявление переменной цикла
+
+            asmText += "labelFOR" + l1 + ":\n";
+            GoDeep(4, tree);//условие
+            asmText += "cmp eax, 0;\n";
+            asmText += "je labelFOR" + l2 + ";\n";
+
+            GoDeep(8, tree);//тело
+
+            GoDeep(6, tree);//инкремент в конце цикла
+            asmText += "jmp labelFOR" + l1 + ";\n";
+            asmText += "labelFOR" + l2 + ":\n";
         }
 
-        int labelNum = 0;
 
         void IfOperatorF(Tree<Lex> tree)
         {
@@ -325,7 +332,7 @@ namespace С_Question_Parser_and_Analyser
                 asmText += "push eax;\n";
                 GoDeep(i, tree);
                 asmText += "pop ebx;\n";
-                asmText += "or eax, ebx;\n"; //хз как реализовать ИЛИ
+                asmText += "or eax, ebx;\n"; //нужно реализовать по шаблону ==
             }
         }
 
@@ -338,10 +345,11 @@ namespace С_Question_Parser_and_Analyser
                 asmText += "push eax;\n";
                 GoDeep(i, tree);
                 asmText += "pop ebx;\n";
-                asmText += "and eax, ebx;\n"; //хз как реализовать И
+                asmText += "and eax, ebx;\n"; //нужно реализовать по шаблону ==
             }
         }
 
+        //сравнение строк не реализовано
         void EqualF(Tree<Lex> tree)
         {
             labelNum += 2;
@@ -354,15 +362,15 @@ namespace С_Question_Parser_and_Analyser
                 asmText += "push eax;\n";
                 GoDeep(i, tree);
                 asmText += "pop ebx;\n";
-                asmText += "cmp eax, ebx;\n"; //реализовать сравнение с отрицание
+                asmText += "cmp eax, ebx;\n"; 
                 asmText += "je labelCMP"+l1+";\n";
-                asmText += "mov eax,0;\n";
+                if (tree.Children[i-1].Value.number == 10) asmText += "mov eax, 0;\n"; // ==
+                else asmText += "mov eax, 1;\n"; // !=
                 asmText += "jmp labelCMP" + l2 + ";\n";
                 asmText += "labelCMP" + l1 + ":\n";
-                asmText += "mov eax,1;\n";
+                if (tree.Children[i - 1].Value.number == 10) asmText += "mov eax, 1;\n";
+                else asmText += "mov eax, 0;\n";
                 asmText += "labelCMP" + l2 + ":\n";
-
-                //if (tree.Children[i - 1].Value.number == 11) asmText += "not eax;\n";
             }
         }
 
@@ -375,10 +383,11 @@ namespace С_Question_Parser_and_Analyser
                 asmText += "push eax;\n";
                 GoDeep(i, tree);
                 asmText += "pop ebx;\n";
-                asmText += "cmp eax, ebx;\n"; //хз как реализовать сравнение больше меньше
+                asmText += "cmp eax, ebx;\n"; //нужно реализовать по шаблону ==
                 if (tree.Children[i - 1].Value.number == 11) asmText += "not eax;\n";
             }
         }
+
 
         void PlusF(Tree<Lex> tree)
         {
@@ -386,7 +395,6 @@ namespace С_Question_Parser_and_Analyser
 
             for (int i = 2; i < tree.Children.Count; i += 2)
             {
-                //asmText += "mov ebx, eax;\n";
                 asmText += "push eax;\n";
                 GoDeep(i, tree);
                 asmText += "pop ebx;\n";
@@ -437,7 +445,7 @@ namespace С_Question_Parser_and_Analyser
             if (tree.Children[0].Value.type == LexType.separ)
             {
                 if (tree.Children[0].Value.number == 17) asmText += "neg eax;\n";
-                else if (tree.Children[0].Value.number == 20) asmText += "not eax;\n";
+                else if (tree.Children[0].Value.number == 20) asmText += "not eax;\n"; //сделать правильное логическое отрицание
             }
 
         }
@@ -445,7 +453,7 @@ namespace С_Question_Parser_and_Analyser
         void StringMathF(Tree<Lex> tree)
         {
             asmText += "mov eax, str_" + tree.Children[0].Value.number + ";\n";
-            //тут добавить обработку сложения строк
+            //тут добавить обработку сложения строк и строки с числом
         }
 
         void IncrF(Tree<Lex> tree)
@@ -454,11 +462,6 @@ namespace С_Question_Parser_and_Analyser
             if (tree.Children[1].Value.number == 21) asmText += "inc " + prog.identifers[tree.Children[0].Value.number] + ";\n";
             else if (tree.Children[1].Value.number == 22) asmText += "inc " + prog.identifers[tree.Children[0].Value.number] + ";\n";
 
-            //asmText += "mov eax, " + prog.identifers[tree.Children[0].Value.number] + ";\n";
-            //if (tree.Children[0].Value.number == 21) asmText += "inc eax;\n";
-            //else if (tree.Children[0].Value.number == 22) asmText += "dec eax;\n";
-
-            //asmText += "mov " + prog.identifers[tree.Children[0].Value.number] + ", eax;\n";
         }
 
 
