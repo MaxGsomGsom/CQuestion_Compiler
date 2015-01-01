@@ -255,7 +255,7 @@ namespace С_Question_Parser_and_Analyser
         bool IsSymbEmpty(int pos)
         {
             char c = inputText[pos];
-            if (c == ' ' || c == '\n' || c == '\r') return true;
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') return true;
             return false;
         }
 
