@@ -189,11 +189,11 @@ namespace С_Question_Parser_and_Analyser
             if (str.strConst != "") asmText += str.strConst;
 
             asmText += "_asm {\n";
-            asmText += "pusha;\n";
+            //asmText += "pusha;\n";
             childPos += 2;
             childPos = GoDeep(childPos, tree);
             asmText += returnFlag + ":\n"; //для return
-            asmText += "popa;\n";
+            //asmText += "popa;\n";
             asmText += "}\n}\n\n";
 
             returnFlag = returnFlagOld;
@@ -219,7 +219,7 @@ namespace С_Question_Parser_and_Analyser
                         {
                             str.intStr += " " + prog.identifers[tree.Children[1].Children[0].Value.number];
                         }
-                        else str.intStr += " " + prog.identifers[tree.Children[1].Value.number];
+                        else str.intStr += " " + prog.identifers[tree.Children[i].Value.number];
                         str.intStr += ",";
                     }
                 }
@@ -234,7 +234,7 @@ namespace С_Question_Parser_and_Analyser
                             {
                                 str.strStr += " *" + prog.identifers[tree.Children[1].Children[0].Value.number] + " = new char[255]";
                             }
-                            else str.strStr += " *" + prog.identifers[tree.Children[1].Value.number] + " = new char[255]";
+                            else str.strStr += " *" + prog.identifers[tree.Children[i].Value.number] + " = new char[255]";
                             str.strStr += ",";
                         }
                     }
@@ -289,12 +289,9 @@ namespace С_Question_Parser_and_Analyser
         void FuncCallF(Tree<Lex> tree)
         {
 
-
             GoDeep(2, tree);//параметры в стек
 
-
             GoDeep(0, tree);//вызов функции
-
 
             if (tree.Children[2].Value.type == LexType.unTerm)
             {
@@ -409,13 +406,9 @@ namespace С_Question_Parser_and_Analyser
 
         void IfForBodyF(Tree<Lex> tree)
         {
-            for (int i = 0; i < tree.Children.Count; i++)
-            {
-                if (tree.Children[i].Value.type == LexType.unTerm)
-                {
-                    GoDeep(i, tree);
-                }
-            }
+            if (tree.Children[0].Value.type == LexType.unTerm) GoDeep(0, tree);
+            else GoDeep(1, tree);
+
         }
 
         void MathF(Tree<Lex> tree)
@@ -520,7 +513,7 @@ namespace С_Question_Parser_and_Analyser
                 GoDeep(i, tree);
                 asmText += "pop ebx;\n";
                 if (tree.Children[i - 1].Value.number == 18) asmText += "imul ebx;\n";
-                if (tree.Children[i - 1].Value.number == 19) asmText += "idiv ebx;\n";
+                if (tree.Children[i - 1].Value.number == 19) asmText += "mov ecx, eax;\nmov eax, ebx;\nmov edx, 0;\nidiv ecx;\n";
             }
         }
 
