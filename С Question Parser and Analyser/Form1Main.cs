@@ -6,6 +6,7 @@ using System.IO;
 
 namespace С_Question_Parser_and_Analyser
 {
+
     public partial class Form1Main : Form
     {
         LexParser pars;
@@ -16,14 +17,10 @@ namespace С_Question_Parser_and_Analyser
 
         private void button1LoadFile_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openDialog = new OpenFileDialog();
+        
 
-            openDialog.ShowDialog();
-            if (openDialog.FileName == "") return;
-
-            string inputText = File.ReadAllText(openDialog.FileName, Encoding.GetEncoding(1251));
-
-            pars = new LexParser(inputText);
+            //вывод лексем
+            pars = new LexParser(textBox1text.Text);
             pars.Parse();
 
             listView1.Items.Clear();
@@ -35,18 +32,22 @@ namespace С_Question_Parser_and_Analyser
                 listView1.Items.Add(new ListViewItem(lexes[i]));
             }
 
+            //построение дерева
             SyntaxAnalyzer synAn = new SyntaxAnalyzer(pars.LexesStore);
             synAn.Analyze();
-            //synAn.OptimizeTree();  оптимизация ломает генератор кода
+
+            //вывод ассемблера
+            CodeGenerator gen = new CodeGenerator(synAn.LexesStore);
+            textBox1code.Text = gen.ExploreTree().Replace("\n", "\r\n");
+
+            //вывод дерева
+            synAn.OptimizeTree();  //оптимизация ломает генератор кода, поэтому выполняется вконце
 
             treeView1.Nodes.Clear();
 
             treeView1.BeginUpdate();
             ViewLexTree(synAn.LexesStore.lexTree, synAn.LexesStore, treeView1.Nodes);
             treeView1.EndUpdate();
-
-            CodeGenerator gen = new CodeGenerator(synAn.LexesStore);
-            textBox1code.Text = gen.ExploreTree().Replace("\n", "\r\n");
 
         }
 
@@ -111,6 +112,17 @@ namespace С_Question_Parser_and_Analyser
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             treeView1.ExpandAll();
+        }
+
+        private void button1open_Click(object sender, EventArgs e)
+        {
+
+            OpenFileDialog openDialog = new OpenFileDialog();
+
+            openDialog.ShowDialog();
+            if (openDialog.FileName == "") return;
+
+            textBox1text.Text = File.ReadAllText(openDialog.FileName, Encoding.GetEncoding(1251));
         }
 
     }
