@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.button1LoadFile = new System.Windows.Forms.Button();
+            this.button1translate = new System.Windows.Forms.Button();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1num = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2type = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -43,24 +43,28 @@
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPage3code = new System.Windows.Forms.TabPage();
             this.textBox1code = new System.Windows.Forms.TextBox();
+            this.tabPage1text = new System.Windows.Forms.TabPage();
+            this.textBox1text = new System.Windows.Forms.TextBox();
+            this.button1open = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1List.SuspendLayout();
             this.tabPage2Tree.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.tabPage3code.SuspendLayout();
+            this.tabPage1text.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1LoadFile
+            // button1translate
             // 
-            this.button1LoadFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button1LoadFile.Location = new System.Drawing.Point(9, 368);
-            this.button1LoadFile.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.button1LoadFile.Name = "button1LoadFile";
-            this.button1LoadFile.Size = new System.Drawing.Size(176, 32);
-            this.button1LoadFile.TabIndex = 0;
-            this.button1LoadFile.Text = "Загрузить текст программы";
-            this.button1LoadFile.UseVisualStyleBackColor = true;
-            this.button1LoadFile.Click += new System.EventHandler(this.button1LoadFile_Click);
+            this.button1translate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button1translate.Location = new System.Drawing.Point(163, 372);
+            this.button1translate.Margin = new System.Windows.Forms.Padding(2);
+            this.button1translate.Name = "button1translate";
+            this.button1translate.Size = new System.Drawing.Size(176, 30);
+            this.button1translate.TabIndex = 0;
+            this.button1translate.Text = "Транслировать программу";
+            this.button1translate.UseVisualStyleBackColor = true;
+            this.button1translate.Click += new System.EventHandler(this.button1LoadFile_Click);
             // 
             // listView1
             // 
@@ -70,7 +74,7 @@
             this.columnHeader3lec});
             this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listView1.Location = new System.Drawing.Point(2, 2);
-            this.listView1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.listView1.Margin = new System.Windows.Forms.Padding(2);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(560, 324);
             this.listView1.TabIndex = 1;
@@ -97,11 +101,12 @@
             this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControl1.Controls.Add(this.tabPage1text);
             this.tabControl1.Controls.Add(this.tabPage1List);
             this.tabControl1.Controls.Add(this.tabPage2Tree);
             this.tabControl1.Controls.Add(this.tabPage3code);
             this.tabControl1.Location = new System.Drawing.Point(9, 10);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(2);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(572, 354);
@@ -111,9 +116,9 @@
             // 
             this.tabPage1List.Controls.Add(this.listView1);
             this.tabPage1List.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1List.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage1List.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage1List.Name = "tabPage1List";
-            this.tabPage1List.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage1List.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage1List.Size = new System.Drawing.Size(564, 328);
             this.tabPage1List.TabIndex = 0;
             this.tabPage1List.Text = "Список лексем";
@@ -123,9 +128,9 @@
             // 
             this.tabPage2Tree.Controls.Add(this.treeView1);
             this.tabPage2Tree.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2Tree.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage2Tree.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage2Tree.Name = "tabPage2Tree";
-            this.tabPage2Tree.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage2Tree.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage2Tree.Size = new System.Drawing.Size(564, 328);
             this.tabPage2Tree.TabIndex = 1;
             this.tabPage2Tree.Text = "Дерево лексем";
@@ -136,7 +141,7 @@
             this.treeView1.ContextMenuStrip = this.contextMenuStrip1;
             this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView1.Location = new System.Drawing.Point(2, 2);
-            this.treeView1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.treeView1.Margin = new System.Windows.Forms.Padding(2);
             this.treeView1.Name = "treeView1";
             this.treeView1.Size = new System.Drawing.Size(560, 324);
             this.treeView1.TabIndex = 0;
@@ -186,14 +191,50 @@
             this.textBox1code.Size = new System.Drawing.Size(557, 321);
             this.textBox1code.TabIndex = 0;
             // 
+            // tabPage1text
+            // 
+            this.tabPage1text.Controls.Add(this.textBox1text);
+            this.tabPage1text.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1text.Name = "tabPage1text";
+            this.tabPage1text.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1text.Size = new System.Drawing.Size(564, 328);
+            this.tabPage1text.TabIndex = 3;
+            this.tabPage1text.Text = "Текст программы";
+            this.tabPage1text.UseVisualStyleBackColor = true;
+            // 
+            // textBox1text
+            // 
+            this.textBox1text.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox1text.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox1text.Location = new System.Drawing.Point(0, 0);
+            this.textBox1text.Multiline = true;
+            this.textBox1text.Name = "textBox1text";
+            this.textBox1text.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox1text.Size = new System.Drawing.Size(564, 328);
+            this.textBox1text.TabIndex = 0;
+            // 
+            // button1open
+            // 
+            this.button1open.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button1open.Location = new System.Drawing.Point(9, 372);
+            this.button1open.Name = "button1open";
+            this.button1open.Size = new System.Drawing.Size(149, 30);
+            this.button1open.TabIndex = 3;
+            this.button1open.Text = "Открыть файл";
+            this.button1open.UseVisualStyleBackColor = true;
+            this.button1open.Click += new System.EventHandler(this.button1open_Click);
+            // 
             // Form1Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(590, 410);
+            this.Controls.Add(this.button1open);
             this.Controls.Add(this.tabControl1);
-            this.Controls.Add(this.button1LoadFile);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Controls.Add(this.button1translate);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MinimumSize = new System.Drawing.Size(99, 198);
             this.Name = "Form1Main";
             this.Text = "C Question";
@@ -203,13 +244,15 @@
             this.contextMenuStrip1.ResumeLayout(false);
             this.tabPage3code.ResumeLayout(false);
             this.tabPage3code.PerformLayout();
+            this.tabPage1text.ResumeLayout(false);
+            this.tabPage1text.PerformLayout();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button button1LoadFile;
+        private System.Windows.Forms.Button button1translate;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ColumnHeader columnHeader1num;
         private System.Windows.Forms.ColumnHeader columnHeader2type;
@@ -223,6 +266,9 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.TabPage tabPage3code;
         private System.Windows.Forms.TextBox textBox1code;
+        private System.Windows.Forms.TabPage tabPage1text;
+        private System.Windows.Forms.TextBox textBox1text;
+        private System.Windows.Forms.Button button1open;
     }
 }
 

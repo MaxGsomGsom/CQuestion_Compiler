@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "С Question Parser and Analyser", "С Question Parser and Analyser\С Question Parser and Analyser.csproj", "{5CE1F243-2B2A-4064-B5ED-771DF0D0FD67}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExampleASM", "..\ExampleASM\ExampleASM\ExampleASM.vcxproj", "{CA3E7166-E1D5-4827-A64B-1FF1ABDC1100}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExampleASM", "ExampleASM\ExampleASM\ExampleASM.vcxproj", "{CA3E7166-E1D5-4827-A64B-1FF1ABDC1100}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

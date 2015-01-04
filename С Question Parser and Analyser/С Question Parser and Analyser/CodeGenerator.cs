@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace С_Question_Parser_and_Analyser
 {
@@ -114,20 +115,20 @@ namespace С_Question_Parser_and_Analyser
 
             if (prog.identifers[tree.Children[tree.Children.Count - 1].Value.number] == "WriteLine")
             {
-                asmText += "call puts;\n";
+                asmText += "\t\tcall puts;\n";
             }
             else if (prog.identifers[tree.Children[tree.Children.Count - 1].Value.number] == "ReadLine")
             {
                 if (assingFlag != "")
                 {
-                    asmText += "push " + assingFlag + ";\n";
+                    asmText += "\t\tpush " + assingFlag + ";\n";
                 }
                 else
                 {
-                    asmText += "push _str_buf;\n";
+                    asmText += "\t\tpush _str_buf;\n";
                 }
-                asmText += "call gets;\n";
-                asmText += "add esp, 4;\n";
+                asmText += "\t\tcall gets;\n";
+                asmText += "\t\tadd esp, 4;\n";
 
             }
             else if (prog.identifers[tree.Children[tree.Children.Count - 1].Value.number] == "ToString")
@@ -136,22 +137,22 @@ namespace С_Question_Parser_and_Analyser
                 asmText += "push 10;\n";
                 if (assingFlag != "")
                 {
-                    asmText += "push " + assingFlag + ";\n";
+                    asmText += "\t\tpush " + assingFlag + ";\n";
                 }
                 else
                 {
-                    asmText += "push _str_buf;\n";
+                    asmText += "\t\tpush _str_buf;\n";
                 }
-                asmText += "push eax;\n";
-                asmText += "call _itoa;\n";
-                asmText += "add esp, 8;\n";
+                asmText += "\t\tpush eax;\n";
+                asmText += "\t\tcall _itoa;\n";
+                asmText += "\t\tadd esp, 8;\n";
 
             }
             else if (prog.identifers[tree.Children[tree.Children.Count - 1].Value.number] == "ToInt32")
             {
-                asmText += "call atoi;\n";
+                asmText += "\t\tcall atoi;\n";
             }
-            else asmText += "call " + prog.identifers[tree.Children[tree.Children.Count - 1].Value.number] + ";\n";
+            else asmText += "\t\tcall " + prog.identifers[tree.Children[tree.Children.Count - 1].Value.number] + ";\n";
         }
 
         void ClassF(Tree<Lex> tree)
@@ -192,9 +193,9 @@ namespace С_Question_Parser_and_Analyser
             //asmText += "pusha;\n";
             childPos += 2;
             childPos = GoDeep(childPos, tree);
-            asmText += returnFlag + ":\n"; //для return
+            asmText += "\t" + returnFlag + ":\n"; //для return
             //asmText += "popa;\n";
-            asmText += "}\n}\n\n";
+            asmText += "}\n}\n\n\n\n\n";
 
             returnFlag = returnFlagOld;
         }
@@ -269,18 +270,18 @@ namespace С_Question_Parser_and_Analyser
                 if (tree.Children[0].Value.number == 7)
                 {
                     //break
-                    if (breakFlag != "") asmText += "jmp " + breakFlag + ";\n";
+                    if (breakFlag != "") asmText += "\t\tjmp " + breakFlag + ";\n";
                 }
                 else if (tree.Children[0].Value.number == 8)
                 {
                     //continue
-                    if (continueFlag != "") asmText += "jmp " + continueFlag + ";\n";
+                    if (continueFlag != "") asmText += "\t\tjmp " + continueFlag + ";\n";
                 }
                 else if (tree.Children[0].Value.number == 9)
                 {
                     //return
-                    if (tree.Children[1].Value.type == LexType.id) asmText += "mov eax, " + prog.identifers[tree.Children[1].Value.number] + ";\n";
-                    asmText += "jmp " + returnFlag + ";\n";
+                    if (tree.Children[1].Value.type == LexType.id) asmText += "\t\tmov eax, " + prog.identifers[tree.Children[1].Value.number] + ";\n";
+                    asmText += "\t\tjmp " + returnFlag + ";\n";
                 }
             }
 
@@ -300,7 +301,7 @@ namespace С_Question_Parser_and_Analyser
                 {
                     if (tree.Children[2].Children[i].Value.type == LexType.unTerm) paramNum++;
                 }
-                asmText += "add esp, " + paramNum * 4 + ";\n";
+                asmText += "\t\tadd esp, " + paramNum * 4 + ";\n";
             }
 
         }
@@ -313,7 +314,7 @@ namespace С_Question_Parser_and_Analyser
                 if (tree.Children[childPos].Value.type == LexType.unTerm)
                 {
                     GoDeep(childPos, tree);
-                    asmText += "push eax;\n";
+                    asmText += "\t\tpush eax;\n";
                 }
             }
 
@@ -324,7 +325,7 @@ namespace С_Question_Parser_and_Analyser
             assingFlag = prog.identifers[tree.Children[0].Value.number];
 
             GoDeep(2, tree);
-            asmText += "mov " + prog.identifers[tree.Children[0].Value.number] + ", eax;\n";
+            asmText += "\t\tmov " + prog.identifers[tree.Children[0].Value.number] + ", eax;\n";
 
             assingFlag = "";
         }
@@ -361,23 +362,23 @@ namespace С_Question_Parser_and_Analyser
                 childNum += 2;
             }
             else childNum++;
-            asmText += "labelFOR" + l1 + ":\n";
+            asmText += "\tlabelFOR" + l1 + ":\n";
             GoDeep(childNum, tree);//условие
             childNum += 2;
 
-            asmText += "cmp eax, 0;\n";
-            asmText += "je labelFOR" + l2 + ";\n";
+            asmText += "\t\tcmp eax, 0;\n";
+            asmText += "\t\tje labelFOR" + l2 + ";\n";
 
             GoDeep(tree.Children.Count - 1, tree);//тело
 
             if (tree.Children.Count - 3 == childNum)
             {
-                asmText += "labelFOR" + l3 + ":\n"; //метка для continue
+                asmText += "\tlabelFOR" + l3 + ":\n"; //метка для continue
                 GoDeep(childNum, tree);//инкремент в конце цикла
 
             }
-            asmText += "jmp labelFOR" + l1 + ";\n";
-            asmText += "labelFOR" + l2 + ":\n";
+            asmText += "\t\tjmp labelFOR" + l1 + ";\n";
+            asmText += "\tlabelFOR" + l2 + ":\n";
 
             continueFlag = continueFlagOld;
             breakFlag = breakFlagOld;
@@ -390,17 +391,17 @@ namespace С_Question_Parser_and_Analyser
             int l1 = labelNum, l2 = labelNum + 1;
             GoDeep(2, tree);//условие
 
-            asmText += "cmp eax, 0;\n";
-            asmText += "je labelIF" + l1 + ";\n";
+            asmText += "\t\tcmp eax, 0;\n";
+            asmText += "\t\tje labelIF" + l1 + ";\n";
 
             GoDeep(4, tree);//если 1
-            if (tree.Children.Count > 6) asmText += "jmp labelIF" + l2 + ";\n";
-            asmText += "labelIF" + l1 + ":\n";
+            if (tree.Children.Count > 6) asmText += "\t\tjmp labelIF" + l2 + ";\n";
+            asmText += "\tlabelIF" + l1 + ":\n";
 
             if (tree.Children.Count == 7)
             {
                 GoDeep(6, tree); //если 0
-                asmText += "labelIF" + l2 + ":\n";
+                asmText += "\tlabelIF" + l2 + ":\n";
             }
         }
 
@@ -417,10 +418,10 @@ namespace С_Question_Parser_and_Analyser
 
             for (int i = 2; i < tree.Children.Count; i += 2)
             {
-                asmText += "push eax;\n";
+                asmText += "\t\tpush eax;\n";
                 GoDeep(i, tree);
-                asmText += "pop ebx;\n";
-                asmText += "or eax, ebx;\n"; // ИЛИ
+                asmText += "\t\tpop ebx;\n";
+                asmText += "\t\tor eax, ebx;\n"; // ИЛИ
             }
         }
 
@@ -430,10 +431,10 @@ namespace С_Question_Parser_and_Analyser
 
             for (int i = 2; i < tree.Children.Count; i += 2)
             {
-                asmText += "push eax;\n";
+                asmText += "\t\tpush eax;\n";
                 GoDeep(i, tree);
-                asmText += "pop ebx;\n";
-                asmText += "and eax, ebx;\n"; // И
+                asmText += "\t\tpop ebx;\n";
+                asmText += "\t\tand eax, ebx;\n"; // И
             }
         }
 
@@ -447,18 +448,18 @@ namespace С_Question_Parser_and_Analyser
 
             for (int i = 2; i < tree.Children.Count; i += 2)
             {
-                asmText += "push eax;\n";
+                asmText += "\t\tpush eax;\n";
                 GoDeep(i, tree);
-                asmText += "pop ebx;\n";
-                asmText += "cmp eax, ebx;\n";
-                asmText += "je labelCMP" + l1 + ";\n";
-                if (tree.Children[i - 1].Value.number == 10) asmText += "mov eax, 0;\n"; // ==
-                else asmText += "mov eax, 1;\n"; // !=
-                asmText += "jmp labelCMP" + l2 + ";\n";
-                asmText += "labelCMP" + l1 + ":\n";
-                if (tree.Children[i - 1].Value.number == 10) asmText += "mov eax, 1;\n";
-                else asmText += "mov eax, 0;\n";
-                asmText += "labelCMP" + l2 + ":\n";
+                asmText += "\t\tpop ebx;\n";
+                asmText += "\t\tcmp eax, ebx;\n";
+                asmText += "\t\tje labelCMP" + l1 + ";\n";
+                if (tree.Children[i - 1].Value.number == 10) asmText += "\t\tmov eax, 0;\n"; // ==
+                else asmText += "\t\tmov eax, 1;\n"; // !=
+                asmText += "\t\tjmp labelCMP" + l2 + ";\n";
+                asmText += "\tlabelCMP" + l1 + ":\n";
+                if (tree.Children[i - 1].Value.number == 10) asmText += "\t\tmov eax, 1;\n";
+                else asmText += "\t\tmov eax, 0;\n";
+                asmText += "\tlabelCMP" + l2 + ":\n";
             }
         }
 
@@ -471,20 +472,20 @@ namespace С_Question_Parser_and_Analyser
 
             for (int i = 2; i < tree.Children.Count; i += 2)
             {
-                asmText += "push eax;\n";
+                asmText += "\t\tpush eax;\n";
                 GoDeep(i, tree);
-                asmText += "pop ebx;\n";
-                asmText += "cmp eax, ebx;\n";
-                if (tree.Children[i - 1].Value.number == 12) asmText += "jg labelCMP" + l1 + ";\n"; // <
-                else if (tree.Children[i - 1].Value.number == 13) asmText += "jl labelCMP" + l1 + ";\n"; // >
-                else if (tree.Children[i - 1].Value.number == 14) asmText += "jle labelCMP" + l1 + ";\n"; // >=
-                else if (tree.Children[i - 1].Value.number == 15) asmText += "jge labelCMP" + l1 + ";\n"; // <=
+                asmText += "\t\tpop ebx;\n";
+                asmText += "\t\tcmp eax, ebx;\n";
+                if (tree.Children[i - 1].Value.number == 12) asmText += "\t\tjg labelCMP" + l1 + ";\n"; // <
+                else if (tree.Children[i - 1].Value.number == 13) asmText += "\t\tjl labelCMP" + l1 + ";\n"; // >
+                else if (tree.Children[i - 1].Value.number == 14) asmText += "\t\tjle labelCMP" + l1 + ";\n"; // >=
+                else if (tree.Children[i - 1].Value.number == 15) asmText += "\t\tjge labelCMP" + l1 + ";\n"; // <=
 
-                asmText += "mov eax, 0;\n";
-                asmText += "jmp labelCMP" + l2 + ";\n";
-                asmText += "labelCMP" + l1 + ":\n";
-                asmText += "mov eax, 1;\n";
-                asmText += "labelCMP" + l2 + ":\n";
+                asmText += "\t\tmov eax, 0;\n";
+                asmText += "\t\tjmp labelCMP" + l2 + ";\n";
+                asmText += "\tlabelCMP" + l1 + ":\n";
+                asmText += "\t\tmov eax, 1;\n";
+                asmText += "\tlabelCMP" + l2 + ":\n";
             }
         }
 
@@ -495,11 +496,11 @@ namespace С_Question_Parser_and_Analyser
 
             for (int i = 2; i < tree.Children.Count; i += 2)
             {
-                asmText += "push eax;\n";
+                asmText += "\t\tpush eax;\n";
                 GoDeep(i, tree);
-                asmText += "pop ebx;\n";
-                if (tree.Children[i - 1].Value.number == 16) asmText += "add eax, ebx;\n";
-                if (tree.Children[i - 1].Value.number == 17) asmText += "sub eax, ebx;\nneg eax;\n";
+                asmText += "\t\tpop ebx;\n";
+                if (tree.Children[i - 1].Value.number == 16) asmText += "\t\tadd eax, ebx;\n";
+                if (tree.Children[i - 1].Value.number == 17) asmText += "\t\tsub eax, ebx;\n\t\tneg eax;\n";
             }
         }
 
@@ -509,11 +510,11 @@ namespace С_Question_Parser_and_Analyser
 
             for (int i = 2; i < tree.Children.Count; i += 2)
             {
-                asmText += "push eax;\n";
+                asmText += "\t\tpush eax;\n";
                 GoDeep(i, tree);
-                asmText += "pop ebx;\n";
-                if (tree.Children[i - 1].Value.number == 18) asmText += "imul ebx;\n";
-                if (tree.Children[i - 1].Value.number == 19) asmText += "mov ecx, eax;\nmov eax, ebx;\nmov edx, 0;\nidiv ecx;\n";
+                asmText += "\t\tpop ebx;\n";
+                if (tree.Children[i - 1].Value.number == 18) asmText += "\t\timul ebx;\n";
+                if (tree.Children[i - 1].Value.number == 19) asmText += "\t\tmov ecx, eax;\n\t\tmov eax, ebx;\n\t\tmov edx, 0;\n\t\tidiv ecx;\n";
             }
         }
 
@@ -529,22 +530,22 @@ namespace С_Question_Parser_and_Analyser
             //unTerm
             if (tree.Children[childPos].Value.type == LexType.unTerm) GoDeep(childPos, tree);
             //number
-            else if (tree.Children[childPos].Value.type == LexType.num) asmText += "mov eax, " + prog.numericConst[tree.Children[childPos].Value.number] + ";\n";
+            else if (tree.Children[childPos].Value.type == LexType.num) asmText += "\t\tmov eax, " + prog.numericConst[tree.Children[childPos].Value.number] + ";\n";
             //true, false
             else if (tree.Children[childPos].Value.type == LexType.reserv)
             {
-                if (tree.Children[childPos].Value.number == 13) asmText += "mov eax, 1;\n";
-                if (tree.Children[childPos].Value.number == 14) asmText += "mov eax, 0;\n";
+                if (tree.Children[childPos].Value.number == 13) asmText += "\t\tmov eax, 1;\n";
+                if (tree.Children[childPos].Value.number == 14) asmText += "\t\tmov eax, 0;\n";
             }
             //unTerm
             else if (tree.Children[childPos].Value.type == LexType.separ) asmText += GoDeep(childPos + 1, tree);
             //id 
-            else if (tree.Children[childPos].Value.type == LexType.id) asmText += "mov eax, " + prog.identifers[tree.Children[childPos].Value.number] + ";\n";
+            else if (tree.Children[childPos].Value.type == LexType.id) asmText += "\t\tmov eax, " + prog.identifers[tree.Children[childPos].Value.number] + ";\n";
 
             //- or !
             if (tree.Children[0].Value.type == LexType.separ)
             {
-                if (tree.Children[0].Value.number == 17) asmText += "neg eax;\n";
+                if (tree.Children[0].Value.number == 17) asmText += "\t\tneg eax;\n";
                 //отрицание !
                 else if (tree.Children[0].Value.number == 20)
                 {
@@ -554,13 +555,13 @@ namespace С_Question_Parser_and_Analyser
                     int l1 = labelNum, l2 = labelNum + 1;
 
 
-                    asmText += "cmp eax, 0;\n";
-                    asmText += "je labelCMP" + l1 + ";\n";
-                    asmText += "mov eax, 0;\n";
-                    asmText += "jmp labelCMP" + l2 + ";\n";
-                    asmText += "labelCMP" + l1 + ":\n";
-                    asmText += "mov eax, 1;\n";
-                    asmText += "labelCMP" + l2 + ":\n";
+                    asmText += "\t\tcmp eax, 0;\n";
+                    asmText += "\t\tje labelCMP" + l1 + ";\n";
+                    asmText += "\t\tmov eax, 0;\n";
+                    asmText += "\t\tjmp labelCMP" + l2 + ";\n";
+                    asmText += "\tlabelCMP" + l1 + ":\n";
+                    asmText += "\t\tmov eax, 1;\n";
+                    asmText += "\tlabelCMP" + l2 + ":\n";
 
 
 
@@ -571,21 +572,17 @@ namespace С_Question_Parser_and_Analyser
 
         void StringMathF(Tree<Lex> tree)
         {
-            asmText += "mov eax, _str_" + tree.Children[0].Value.number + ";\n";
+            asmText += "\t\tmov eax, _str_" + tree.Children[0].Value.number + ";\n";
 
         }
 
         void IncrF(Tree<Lex> tree)
         {
 
-            if (tree.Children[1].Value.number == 21) asmText += "inc " + prog.identifers[tree.Children[0].Value.number] + ";\n";
-            else if (tree.Children[1].Value.number == 22) asmText += "inc " + prog.identifers[tree.Children[0].Value.number] + ";\n";
+            if (tree.Children[1].Value.number == 21) asmText += "\t\tinc " + prog.identifers[tree.Children[0].Value.number] + ";\n";
+            else if (tree.Children[1].Value.number == 22) asmText += "\t\tdec " + prog.identifers[tree.Children[0].Value.number] + ";\n";
 
         }
-
-
-
-
 
     }
 }
